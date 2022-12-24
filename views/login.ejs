@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title> <%= title %> </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="./css/style.css" rel="stylesheet">
+
+</head>
+<body>
+    
+            <%- include('header.ejs') %> 
+            
+            <!-- <form action="/session" method="post">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div class="py-3">
+                <label for="email">Email:</label>
+                <input type="email" name="email" class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+                </div>
+                <div class="py-3">
+                <label for="password">Password</label>
+                <input type="password" name="password" class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+                </div>
+                <div class="py-3">
+                <button type="submit" class="text-white bg-green-600 hover:big-green-800 font-medium rounded px-5 py-2">Sign in </button>
+                </div>
+                <div class="py-3">
+                    <button type="button" class="text-white bg-green-600 hover:big-green-800 font-medium rounded px-5 py-2"onclick="history.back()">Go Back </button>
+                    </div>
+
+            </form> -->
+            <div class="relative flex min-h-screen flex-col justify-center overflow-hidden py-6 bg-white ">
+                <div class="relative bg-white px-6 pb-5 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-lg sm:rounded-lg sm:px-10">
+                    <div class="mx-auto max-w-md">
+                        <h2 class="text-2xl  text-center font-bold my-5"> Login To Your Account
+                            
+                        </h2>
+                       
+                        <div class="divide-y  divide-gray-300/50">
+                            <div class="space-y-6 text-base leading-7 text-ray-600">
+                                <form action="/session" method="post">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <label for="email" class="text-md w-40 inline-block font-medium leading-5 text-gray-700">
+                                       Email
+                                    </label>
+                                    <input required type="email" id="name" name="email" class="bg-gray-100 inline-block rounded-lg shadow-md py-3 px-4 mb-5 text-base leading-6 placeolder-gray-500" placeholder="Enter Email" required><br/>
+                                    <label for="password" class="text-md w-40 inline-block font-medium leading-3 text-gray-700">Password</label>
+                                    <input required type="password" id="password" name="password" class="bg-gray-100 inline-block rounded-lg shadow-md py-3 px-4 mb-5 text-base leading-6 placeolder-gray-500" placeholder="Enter Password"><br/>
+                                    <button type="submit" id="submit" class="w-fit rounded-lg shadow-lg px-5 py-3 bg-green-500 text-white hover:bg-green-400 focus:outline-none focus block">Submit</button>
+                                    
+                                </form>
+        
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+                        
+                 
+           <div>
+             <% if(messages && messages.error && messages.error.length > 0)  { %>
+                <% for(var i=0; i<messages.error.length; i++) { %>
+                        <li class="text-white rounded px-4 py-4 bg-red-500"> <%= messages.error[i] %></li>
+                <% } %>
+              <% } %>
+           </div>
+        </div>
+    </div>
+    
+</body>
+</html>
