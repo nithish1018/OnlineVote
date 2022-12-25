@@ -112,9 +112,10 @@ app.post("/admin", async (request, response) => {
   }
 });
 app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
-  if(request.body.electionName.length==0){
-    request.flash("error","Election Name Should be Null")
-    return response.redirect("/elections")
+  const nullString=(request.body.electionName).trim()
+  if(nullString.length==0){
+    request.flash("error","Election Name Should not be Null")
+    return response.redirect("/election/create")
   }
   const url=request.body.customURL
   function stringHasTheWhiteSpaceOrNot(value){
@@ -124,15 +125,14 @@ app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,respons
  if(whiteSpace==true){
   request.flash("error","Don't enter any white spaces")
   console.log("Spaces found")
-    return response.redirect("/elections")
+    return response.redirect("/election/create")
  }
 
   try{
         await Election.addElection({
           electionName:request.body.electionName,
-          customURL:request.body.customURL,
-          csrfToken:request.csrfToken(),
           adminId:request.user.id,
+          customURL:request.body.customURL
         });
        return response.redirect("/elections")
     }
