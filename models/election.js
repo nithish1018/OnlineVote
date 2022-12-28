@@ -12,6 +12,12 @@ module.exports = (sequelize, DataTypes) => {
       Election.belongsTo(models.Admin, {
         foreignKey: "adminId",
       });
+      Election.hasMany(models.Questions, {
+        foreignKey: "electionId",
+      });
+      Election.hasMany(models.Voter,{
+        foreignKey:"electionId"
+      })
     }
     static addElection({ electionName, adminId, customURL }) {
       return this.create({
@@ -20,23 +26,45 @@ module.exports = (sequelize, DataTypes) => {
         adminId,
       });
     }
-  
-          static getAllElections(adminId) {
+    static getAllElections(adminId){
       return this.findAll({
-        where: {
-          adminId,
+        where:{
+          adminId
         },
         order: [["id", "ASC"]],
+
+      })
+    }
+  
+    static  getElectionWithId(id) {
+      return this.findOne({
+        where: {
+          id,
+        },
       });
     }
   }
 
   Election.init(
     {
-      electionName: DataTypes.STRING,
-      customURL: DataTypes.STRING,
-      isRunning: DataTypes.BOOLEAN,
-      isEnded: DataTypes.BOOLEAN,
+      electionName:{
+        type:DataTypes.STRING,
+        unique:true,
+        allowNull:false,
+      },
+      customURL:{
+        type:DataTypes.STRING,
+        unique:true,
+        allowNull:false,
+      },
+      isRunning:{
+        defaultValue:false,
+        type:DataTypes.BOOLEAN
+      },
+      isEnded:{
+        defaultValue:false,
+        type:DataTypes.BOOLEAN
+      },
     },
     {
       sequelize,

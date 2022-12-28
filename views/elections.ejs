@@ -11,18 +11,25 @@
   <body>
     <div><%- include('header.ejs') %></div>
     <div>
-      <h3 class="text-2xl">Hello, <%= userName %></h3>
+      <h3 class="text-2xl px-3 py-2">Hello, <%= userName %></h3>
       <% if (elections.length==0) { %>
        <p>You have zero elections
-      <a href="election/create" class="underline-offset-auto text-green-400">Create New Election From here</a>
+      <a href="elections/create" class="underline-offset-auto text-green-400">Create New Election From here</a>
        </p>
       <% } else{ %>
-        <p class="text-green-400"><%=elections[0].electionName %></p>
+        <p class="text-2xl px-3 py-4">Your Elections are:</p>
+        <% for(var i=0; i<elections.length; i++) {%>
+         
+              <a href="/election/<%= elections[i].id %>" class="px-3 text-xl hover:text-green-300">
+              <%= i+1 %> .<%=elections[i].electionName %>
+              </a>
+         
+       <% } %>
       <% } %> 
     </div>
     <div class="flex gap-2 py-4 justify-between">
       <div class="bg-red-700 rounded w-fit px-2 py-1 hover:bg-red-500">
-          <a href="/election/create" class="text-white">+ Create a new election</a>
+          <a href="/elections/create" class="text-white">+ Create a new election</a>
       </div>
   </div>
   </body>
