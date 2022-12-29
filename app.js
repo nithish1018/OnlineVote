@@ -181,9 +181,10 @@ app.get(
     }
   },
   ),
-  app.get("/election/:id",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
+  app.get("/elections/:id",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
       const election= await Election.getElectionWithId(request.params.id);
       const questionsCount=await Questions.countOFQuestions(request.params.id);
+      const allquestions =await Questions.getAllQuestions
       const votersCount=await Voter.countOFVoters(request.params.id);
       console.log(questionsCount)
      return response.render("questions",{
@@ -198,12 +199,12 @@ app.get(
   app.get("/elections/:id/newquestion",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
     
       const election=await Election.getElectionWithId(request.params.id);
-      const question=await Questions.getQuestionWithId(request.params.id);
+      const questions=await Questions.getAllQuestions(request.params.id)
       if(election.isRunning==false){
         if(request.accepts("html")){
           return response.render("newquestion",{
             title:election.electionName,
-            question:question,
+            questions,
             csrfToken:request.csrfToken(),
             id:request.params.id,
           })
@@ -228,7 +229,7 @@ app.get(
       csrfToken:request.csrfToken()
     })
   })
-  app.get("/elections/create",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
+  app.get("/election/create",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
     response.render("createElection",{
         title:"New Election",
         csrfToken:request.csrfToken(),
@@ -251,7 +252,7 @@ app.get(
         description,
         electionId,
       });
-    return response.redirect(`/election/${request.params.id}`)
+    return response.redirect(`/elections/${request.params.id}`)
     }
     catch(error){
       request.flash("error",error)
