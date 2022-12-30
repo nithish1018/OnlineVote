@@ -16,6 +16,27 @@ module.exports = (sequelize, DataTypes) => {
         onDelete:"CASCADE"
       })
     }
+    static getAllOptions(questionId) {
+      return this.findAll({
+        where: {
+          questionId,
+        },
+        order: [["id", "ASC"]],
+      });
+    }
+    static getOneOption(id) {
+      return this.findOne({
+        where: {
+          id,
+        },
+      });
+    }
+    static addNewOption({option,questionId}){
+      return this.create({
+        option,
+        questionId
+      })
+    }
   }
   Option.init({
     option:{

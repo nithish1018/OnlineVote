@@ -39,6 +39,14 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+    static getQuestionWithName(question,description){
+      return this.findOne({
+        where:{
+          electionQuestion:question,
+          questionDescription:description,
+        }
+      })
+    }
     static async getAllQuestions(electionId){
       return this.findAll({
         where:{

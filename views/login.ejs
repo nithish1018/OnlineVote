@@ -32,6 +32,13 @@
                     </div>
 
             </form> -->
+            <div>
+                <% if(messages && messages.error && messages.error.length > 0)  { %>
+                   <% for(var i=0; i<messages.error.length; i++) { %>
+                           <li class="text-white rounded px-4 py-4 bg-red-500"> <%= messages.error[i] %></li>
+                   <% } %>
+                 <% } %>
+              </div>
             <div class="relative flex min-h-screen flex-col justify-center overflow-hidden py-6 bg-white ">
                 <div class="relative bg-white px-6 pb-5 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-lg sm:rounded-lg sm:px-10">
                     <div class="mx-auto max-w-md">
@@ -59,15 +66,6 @@
                     </div>
                 </div>
             </div>
-                        
-                 
-           <div>
-             <% if(messages && messages.error && messages.error.length > 0)  { %>
-                <% for(var i=0; i<messages.error.length; i++) { %>
-                        <li class="text-white rounded px-4 py-4 bg-red-500"> <%= messages.error[i] %></li>
-                <% } %>
-              <% } %>
-           </div>
         </div>
     </div>
     

@@ -11,26 +11,38 @@
   <body>
     <div><%- include('header.ejs') %></div>
     <div>
+      <% if(messages && messages.error && messages.error.length > 0)  { %>
+         <% for(var i=0; i<messages.error.length; i++) { %>
+                 <li class="text-white rounded px-4 py-4 bg-red-500"> <%= messages.error[i] %></li>
+         <% } %>
+       <% } %>
+    </div>
+    
       <h3 class="text-2xl px-3 py-2">Hello, <%= userName %></h3>
+      <a href="/signout" class="underline text-green-400 hover:text-green-500 px-3"> Signout</a>
       <% if (elections.length==0) { %>
-       <p>You have zero elections
-      <a href="election/create" class="underline-offset-auto text-green-400">Create New Election From here</a>
-       </p>
+       <p>You have zero elections </p><br>
+    <br>  <a href="election/create" class="underline-offset-auto text-green-400">Create New Election From here</a>
+       
       <% } else{ %>
         <p class="text-2xl px-3 py-4">Your Elections are:</p>
         <% for(var i=0; i<elections.length; i++) {%>
          
-              <a href="/elections/<%= elections[i].id %>" class="px-3 text-xl hover:text-green-300">
+             <br> <a href="/elections/<%= elections[i].id %>" class="px-3 py-3 text-xl hover:text-green-300">
               <%= i+1 %> .<%=elections[i].electionName %>
-              </a>
+              </a> <br>
          
        <% } %>
+       <div>
+     <br> <a href="election/create" class="underline text-green-400 text-2xl py-3">Create More Election From here</a>
+
       <% } %> 
-    </div>
-    <div class="flex gap-2 py-4 justify-between">
+      </div>
+    
+    <!-- <div class="flex gap-2 py-4 justify-between">
       <div class="bg-red-700 rounded w-fit px-2 py-1 hover:bg-red-500">
           <a href="/election/create" class="text-white">+ Create a new election</a>
-      </div>
+      </div> -->
   </div>
   </body>
 </html>

@@ -103,6 +103,7 @@ app.post("/admin", async (request, response) => {
       lastName: request.body.lastName,
       email: request.body.email,
       password: hashedPwd,
+      
     });
     request.login(admin, (err) => {
       if (err) {
@@ -118,6 +119,8 @@ app.post("/admin", async (request, response) => {
   }
 });
 app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
+
+ 
   const nullString=(request.body.electionName).trim()
   if(nullString.length==0){
     request.flash("error","Election Name Should not be Null")
@@ -127,12 +130,14 @@ app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,respons
   function stringHasTheWhiteSpaceOrNot(value){
     return value.indexOf(' ') >= 0;
  }
+
  const whiteSpace=stringHasTheWhiteSpaceOrNot(url);
  if(whiteSpace==true){
   request.flash("error","Don't enter any white spaces")
   console.log("Spaces found")
     return response.redirect("/election/create")
  }
+
 
   try{
         await Election.addElection({
@@ -143,7 +148,7 @@ app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,respons
        return response.redirect("/elections")
     }
     catch (error) {
-      request.flash("error", error.message);
+      request.flash("error", "Sorry this URL is already been use");
       return response.redirect("/elections");
     }
 })
@@ -184,7 +189,7 @@ app.get(
   app.get("/elections/:id",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
       const election= await Election.getElectionWithId(request.params.id);
       const questionsCount=await Questions.countOFQuestions(request.params.id);
-      const allquestions =await Questions.getAllQuestions
+      
       const votersCount=await Voter.countOFVoters(request.params.id);
       console.log(questionsCount)
      return response.render("questions",{
@@ -200,17 +205,23 @@ app.get(
     
       const election=await Election.getElectionWithId(request.params.id);
       const questions=await Questions.getAllQuestions(request.params.id)
+      const questionIds=[]
+      for(var i=0;i<questions.length;i++){
+        questionIds[i]=questions[i].id
+      }
+      // console.log(questions[0].id + "Denamma Testing")
       if(election.isRunning==false){
         if(request.accepts("html")){
           return response.render("newquestion",{
             title:election.electionName,
             questions,
+            questionIds,
             csrfToken:request.csrfToken(),
             id:request.params.id,
           })
         }
         else{
-          return response.json({question})
+          return response.json({questions})
         }
       }
       else{
@@ -224,10 +235,34 @@ app.get(
 
   });
   app.get("/elections/:id/newquestion/create",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
+  
+      // const election= await Election.getElectionWithId(request.params.id)
+      // const question=await Questions.getQuestionWithId(request.params.id)
+       
     return response.render("create_question",{
       id: request.params.id,
-      csrfToken:request.csrfToken()
+      csrfToken:request.csrfToken(),
+    
+      
     })
+  })
+  app.get("/elections/:id/newquestion/create/:questionId/showoptions",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
+    try{
+    const question=await Questions.getQuestionWithId(request.params.questionId);
+    const allOptions=await Option.getAllOptions(request.params.questionId);
+    console.log(allOptions + "odiyamma work aitunda")
+    response.render("showOptions",{
+      questionName:question.electionQuestion,
+      allOptions,
+      csrfToken:request.csrfToken(),
+      id:request.params.id,
+      questionId:request.params.questionId
+
+    })
+  }
+  catch(error){
+    console.log(error)
+  }
   })
   app.get("/election/create",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
     response.render("createElection",{
@@ -235,8 +270,33 @@ app.get(
         csrfToken:request.csrfToken(),
     })
 
+
+
+  })
+  app.post("/elections/:id/newquestion/create/:questionId",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
+    await Option.addNewOption({
+      option:request.body.option,
+      questionId:request.params.questionId
+    })
+    // const election= await Election.getElectionWithId(request.params.id)
+    // const question=await Questions.getQuestionWithId(request.params.questionId)
+    const questionId=request.params.questionId
+    return response.redirect(`/elections/${request.params.id}/newquestion/create/${questionId}/`)
+
+  })
+  app.get("/elections/:id/newquestion/create/:questionId",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
+    // const election= await Election.getElectionWithId(request.params.id)
+    // const question=await Questions.getQuestionWithId(request.params.questionId)
+
+    response.render("optionsPage",{
+      title:"Add Options",
+      csrfToken:request.csrfToken(),
+      questionId:request.params.questionId,
+      id:request.params.id
+    })
   })
   app.post("/elections/:id/newquestion/create",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
+   
     const enteredQuestion=(request.body.question).trim()
     if(enteredQuestion.length==0){
       request.flash("error","Question can't be null")
@@ -244,21 +304,76 @@ app.get(
     }
   
     try{
+
       const question=request.body.question;
       const description=request.body.description;
-      const electionId=request.params.id
+      const electionId=request.params.id;
+
       await Questions.addNewQuestion({
         question,
         description,
         electionId,
       });
-    return response.redirect(`/elections/${request.params.id}`)
+      // const thisquestion=await Questions.getQuestionWithId(request.user.id);
+      const thisquestion=await Questions.getQuestionWithName(question,description)
+      // console.log("me so noob HELL yeah"+thisquestion)
+      const questionId=thisquestion.id;
+    return response.redirect(`/elections/${request.params.id}/newquestion/create/${questionId}`)
     }
     catch(error){
       request.flash("error",error)
       return response.redirect(`/elections/${request.params.id}/newquestion/create`)
 
     } 
-})
+});
+  app.get("/elections/:id/voters",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
+    const votersCount=await Voter.countOFVoters(request.params.id);
+    const allVoters=await Voter.getAllVoters(request.params.id);
+    return response.render("voters",{
+      votersCount,
+      allVoters,
+      csrfToken:request.csrfToken(),
+      id:request.params.id,
+    })
+
+  })
+  app.get("/elections/:id/voters/new",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
+    response.render("newVoter",{
+      csrfToken:request.csrfToken(),
+      id:request.params.id,
+    })
+  })
+  app.post("/elections/:id/voters/new",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
+    const voterUserId=(request.body.voterUserId).trim();
+    const voterPassword=request.body.voterPassword;
+    if(voterUserId.length==0){
+      request.flash("error","Voter User Name Shouldn't Be Null")
+      return response.redirect(`/elections/${request.params.id}/voters/new`)
+    }
+    if(voterPassword.length<8){
+      request.flash("error","Password Must Be Of Length 8");
+      return response.redirect(`/elections/${request.params.id}/voters/new`);
+    }
+    try{
+      await Voter.addVoter({
+        voterUserId:voterUserId,
+        voterPassword:voterPassword,
+        electionId:request.params.id,
+      })
+      response.redirect(`/elections/${request.params.id}/voters`)
+    }
+    catch(error){
+      request.flash(error,error);
+      response.redirect(`/elections/${request.params.id}/voters/new`)
+    } 
+  });
+  app.get("/signout", (request, response, next) => {
+    request.logout((err) => {
+      if (err) {
+        return next(err);
+      }
+      response.redirect("/");
+    });
+  });
 
 module.exports = app;

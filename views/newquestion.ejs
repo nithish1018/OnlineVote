@@ -19,13 +19,13 @@
                 <p class="text-2xl px-3 py-4">Your Questions are:</p>
                 <% for(var i=0; i<questions.length; i++) {%>
                  
-                      <a class="px-3 text-xl hover:text-green-300">
+                      <a href="/elections/<%=id%>/newquestion/create/<%=questionIds[i]%>" class="px-3 text-xl hover:text-green-300">
                       <%= i+1 %> .<%=questions[i].electionQuestion %>
-                      </a>
+                      </a> <br>
                  
                <% } %>
                <div class="py-7">
-                <br><a href="/elections/<%=id%>/newquestion/create" class="text-2xl px-2 py-5"> + Add new question from here</a>
+                <br><a href="/elections/<%=id%>/newquestion/create" class="text-2xl px-2 py-5 underline text-green-400"> + Add new question from here</a>
                                     </div>
               <% } %>
  

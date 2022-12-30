@@ -26,6 +26,12 @@ module.exports = (sequelize, DataTypes) => {
         adminId,
       });
     }
+    static getAllURL(adminId){
+      return this.findAll({
+        where:adminId,
+        attributes:['customURL']
+      })
+    }
     static getAllElections(adminId){
       return this.findAll({
         where:{
@@ -49,13 +55,12 @@ module.exports = (sequelize, DataTypes) => {
     {
       electionName:{
         type:DataTypes.STRING,
-        unique:true,
         allowNull:false,
       },
       customURL:{
         type:DataTypes.STRING,
-        unique:true,
         allowNull:false,
+        unique:true,
       },
       isRunning:{
         defaultValue:false,
