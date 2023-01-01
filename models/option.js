@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete:"CASCADE"
       })
     }
-    static getAllOptions(questionId) {
+    static async getAllOptions(questionId) {
       return this.findAll({
         where: {
           questionId,
@@ -24,14 +24,14 @@ module.exports = (sequelize, DataTypes) => {
         order: [["id", "ASC"]],
       });
     }
-    static getOneOption(id) {
+    static async getOneOption(id) {
       return this.findOne({
         where: {
           id,
         },
       });
     }
-    static addNewOption({option,questionId}){
+    static async addNewOption({option,questionId}){
       return this.create({
         option,
         questionId

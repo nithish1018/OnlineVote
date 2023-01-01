@@ -9,7 +9,9 @@
     <title><%= title %> </title>
 </head>
 <body>
-    <h3 class="px-2 py-3"> <%= title %> </h3>
+  <br> <a href="/elections" class="px-3 py-3 text-xl underline text-green-400" > ->Elections Page</a> <br>
+
+    <h3 class="px-2 py-3 text-xl"> Election: <%= title %> </h3>
     <% if (questions.length==0) { %>
         <p class="text-2xl px-3">You have no questions, add from below link
             <div class="py-7">
@@ -20,8 +22,9 @@
                 <% for(var i=0; i<questions.length; i++) {%>
                  
                       <a href="/elections/<%=id%>/newquestion/create/<%=questionIds[i]%>" class="px-3 text-xl hover:text-green-300">
-                      <%= i+1 %> .<%=questions[i].electionQuestion %>
+                      <%= i+1 %>. <%=questions[i].electionQuestion %>
                       </a> <br>
+                      <a class="px-4"> <%= questionDescriptions[i] %></a> <br>
                  
                <% } %>
                <div class="py-7">

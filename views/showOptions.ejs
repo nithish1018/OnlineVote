@@ -11,7 +11,8 @@
    </head>
    <body>
     <%- include('header.ejs') %> 
-    <h3 class="px-5 py-3 text-2xl "> <%= questionName %>  </h3>
+   <br> <a href="/elections/<%=id%>/newquestion" class="text-xl underline text-green-400 px-5 py-3"> -->All Questions </a>
+    <h3 class="px-5 py-3 text-2xl "> Question: <%= questionName %>  </h3>
      
     <% if (allOptions.length==0) { %>
         <p class="text-2xl px-3">You have No Options For This Question, add from below link
@@ -19,7 +20,7 @@
     <br><a href="/elections/<%=id%>/newquestion/create/<%=questionId%>" class="text-2xl px-2 py-8"> + Add new question from here</a>
             </div>
             <% } else{ %>
-                <p class="text-2xl px-3 py-4">Options For Above Question:</p>
+                <p class="text-2xl px-3 py-3">Options For Above Question:</p>
                 <% for(var i=0; i<allOptions.length; i++) {%>
                  
                       <a href="" class="px-3 text-xl hover:text-green-300">

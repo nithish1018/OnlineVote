@@ -25,6 +25,14 @@ module.exports = (sequelize, DataTypes) => {
         electionId
       })
     }
+    static async getAllQuestions(electionId) {
+      return await this.findAll({
+        where: {
+          electionId,
+        },
+        order: [["id", "ASC"]],
+      });
+    }
     static async countOFQuestions(electionId){
       return await this.count({
         where:{

@@ -19,7 +19,8 @@ module.exports = {
         type: Sequelize.BOOLEAN
       },
       isWho: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        defaultValue:"voter"
       },
       createdAt: {
         allowNull: false,

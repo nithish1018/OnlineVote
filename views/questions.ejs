@@ -6,16 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<%= csrfToken %>" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <title><%= title %>  </title>
+    <title> Election Page </title>
 </head>
 <body>
+  
     <div><%- include('header.ejs') %></div>
+  <br> <a href="/elections" class="px-3 py-3 text-xl underline text-green-400" > ->Elections Page</a> <br>
+ <br> <p class="px-3 text-2xl" >Election: <%= title %>  </p> <br>
   <p class="text-2xl px-3 py-2"> No of questions you have are: <%= questionsC %> </p>
   <a href="/elections/<%=id%>/newquestion" class="px-3 py-2 text-xl underline text-green-400">Manage This Election's Questions From Here</a>
 
   <p class="text-2xl px-3 py-3"> No of voters you have are: <%= votersC %> </p>
   
-  <a href="/elections/<%=id%>/voters" class="px-3 py-2 text-xl underline text-green-400" >Manage This Election's Voters From Here</a>
+  <a href="/elections/<%=id%>/voters" class="px-3 py-2 text-xl underline text-green-400" >Manage This Election's Voters From Here</a> <br>
+
+  <% if (true) { %>
+    
+     <br> <br>   <a href="/elections/<%=id%>/election_preview" class="px-4 py-4 text-white wt-fit"> <button class="bg-green-600 hover:bg-green-800 rounded px-2 py-2"> Preview & Launch This Election</button></a>
+  
+<% } %>
   
 </body>
 </html>

@@ -11,22 +11,24 @@
    </head>
    <body>
     <%- include('header.ejs') %> 
+  <br> <a href="/elections/<%=id%>" class="px-3 py-3 text-xl underline text-green-400" > -> <%=thisElectionName%></a> <br>
+
     <% if (votersCount==0) { %>
         <p class="text-2xl px-3">You have No Voters For This Election, add from below link
             <div class="py-7">
-    <br><a href="/elections/<%=id%>/voters/new" class="text-2xl px-2 py-8"> + Add New Voter From Here</a>
+    <br><a href="/elections/<%=id%>/voters/new" class="text-2xl px-2 py-8 underline text-green-400"> + Add New Voter From Here</a>
             </div>
             <% } else{ %>
                 <p class="text-2xl px-3 py-4">Voters List:</p>
                 <% for(var i=0; i<allVoters.length; i++) {%>
                  
-                      <a href="" class="px-3 text-xl hover:text-green-300">
+                     <br> <a href="" class="px-3 text-xl hover:text-green-300">
                       <%= i+1 %> .<%=allVoters[i].voterUserId %>
                       </a> <br>
                  
                <% } %>
                <div class="py-7">
-                <br><a href="/elections/<%=id%>/voters/new" class="text-2xl px-2 py-5 underline hover:text-green-400"> + Add More Voters From Here</a>
+                <br><a href="/elections/<%=id%>/voters/new" class="text-2xl px-2 py-5 underline text-green-400"> + Add More Voters From Here</a>
                                     </div>
               <% } %>
             </body> 

@@ -47,6 +47,7 @@ app.use(function (request, response, next) {
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(
+  "admin",
   new LocalStrategy(
     {
       usernameField: "email",
@@ -68,18 +69,35 @@ passport.use(
     }
   )
 );
-passport.serializeUser((admin, done) => {
-  console.log("Serializing user in session", admin.id);
-  done(null, admin.id);
+
+passport.use(
+  "voter",
+  new LocalStrategy(
+    {
+      usernameField: "voterUserId",
+      passwordField: "voterPassword",
+    },
+    (username, password, done) => {
+      Voter.findOne({ where: { voterUserId: username } })
+        .then(async (user) => {
+          const result = await bcrypt.compare(password, user.password);
+          if (result) {
+            return done(null, user);
+          } else {
+            return done(null, false, { message: "Invalid Password" });
+          }
+        })
+        .catch(function () {
+          return done(null, false, { message: "Unrecognized Email" });
+        });
+    }
+  )
+);
+passport.serializeUser((user, done) => {
+  done(null, user);
 });
-passport.deserializeUser((id, done) => {
-  Admin.findByPk(id)
-    .then((user) => {
-      done(null, user);
-    })
-    .catch((error) => {
-      done(error, null);
-    });
+passport.deserializeUser((user, done) => {
+  done(null, user);
 });
 app.get("/login", (request, response) => {
   response.render("login", { title: "Login", csrfToken: request.csrfToken() });
@@ -140,12 +158,14 @@ app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,respons
 
 
   try{
-        await Election.addElection({
+       const thisElection= await Election.addElection({
           electionName:request.body.electionName,
           adminId:request.user.id,
           customURL:request.body.customURL
         });
-       return response.redirect("/elections")
+       return response.redirect("/elections",{
+        thisElection
+       })
     }
     catch (error) {
       request.flash("error", "Sorry this URL is already been use");
@@ -154,7 +174,7 @@ app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,respons
 })
 app.post(
   "/session",
-  passport.authenticate("local", {
+  passport.authenticate("admin", {
     failureRedirect: "/login",
     failureFlash: true,
   }),
@@ -206,16 +226,21 @@ app.get(
       const election=await Election.getElectionWithId(request.params.id);
       const questions=await Questions.getAllQuestions(request.params.id)
       const questionIds=[]
+      const questionDescriptions=[];
+      for(var i=0;i<questions.length;i++){
+        questionDescriptions[i]=questions[i].questionDescription
+      }
       for(var i=0;i<questions.length;i++){
         questionIds[i]=questions[i].id
       }
-      // console.log(questions[0].id + "Denamma Testing")
+     console.log(questionDescriptions)
       if(election.isRunning==false){
         if(request.accepts("html")){
           return response.render("newquestion",{
             title:election.electionName,
             questions,
             questionIds,
+            questionDescriptions,
             csrfToken:request.csrfToken(),
             id:request.params.id,
           })
@@ -229,15 +254,12 @@ app.get(
         return response.redirect(`/election/${id}/`)
       }
     
-    // catch(error){
-    //   return response.status(422).json(error)
-    // }
+   
 
   });
   app.get("/elections/:id/newquestion/create",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
   
-      // const election= await Election.getElectionWithId(request.params.id)
-      // const question=await Questions.getQuestionWithId(request.params.id)
+
        
     return response.render("create_question",{
       id: request.params.id,
@@ -250,7 +272,7 @@ app.get(
     try{
     const question=await Questions.getQuestionWithId(request.params.questionId);
     const allOptions=await Option.getAllOptions(request.params.questionId);
-    console.log(allOptions + "odiyamma work aitunda")
+
     response.render("showOptions",{
       questionName:question.electionQuestion,
       allOptions,
@@ -278,17 +300,13 @@ app.get(
       option:request.body.option,
       questionId:request.params.questionId
     })
-    // const election= await Election.getElectionWithId(request.params.id)
-    // const question=await Questions.getQuestionWithId(request.params.questionId)
+   
     const questionId=request.params.questionId
     return response.redirect(`/elections/${request.params.id}/newquestion/create/${questionId}/`)
 
   })
   app.get("/elections/:id/newquestion/create/:questionId",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
-    // const election= await Election.getElectionWithId(request.params.id)
-    // const question=await Questions.getQuestionWithId(request.params.questionId)
-
-    response.render("optionsPage",{
+       response.render("optionsPage",{
       title:"Add Options",
       csrfToken:request.csrfToken(),
       questionId:request.params.questionId,
@@ -309,15 +327,15 @@ app.get(
       const description=request.body.description;
       const electionId=request.params.id;
 
-      await Questions.addNewQuestion({
+      const thisquestion = await Questions.addNewQuestion({
         question,
         description,
         electionId,
       });
-      // const thisquestion=await Questions.getQuestionWithId(request.user.id);
-      const thisquestion=await Questions.getQuestionWithName(question,description)
-      // console.log("me so noob HELL yeah"+thisquestion)
-      const questionId=thisquestion.id;
+      
+      // const thisquestion=await Questions.getQuestionWithName(question,description)
+ 
+    const questionId=thisquestion.id;
     return response.redirect(`/elections/${request.params.id}/newquestion/create/${questionId}`)
     }
     catch(error){
@@ -329,14 +347,86 @@ app.get(
   app.get("/elections/:id/voters",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
     const votersCount=await Voter.countOFVoters(request.params.id);
     const allVoters=await Voter.getAllVoters(request.params.id);
+    const thisElection=await Election.getElectionWithId(request.params.id)
+    const thisElectionName=thisElection.electionName
     return response.render("voters",{
       votersCount,
       allVoters,
       csrfToken:request.csrfToken(),
       id:request.params.id,
+      thisElectionName,
     })
+  });
+  app.get("/elections/:id/election_preview",connectEnsureLogin.ensureLoggedIn(), async(request,response)=>{
+    if (request.user.isWho ==="admin") {
+      try {
+        const election = await Election.getElectionWithId(request.params.id);
+        if (request.user.id !== election.adminId) {
+          request.flash("error", "Invalid election Id");
+          return response.redirect("/elections");
+        }
+        const votersCount = await Voter.countOFVoters(
+          request.params.id
+        );
+        const questions = await Questions.getAllQuestions(
+          request.params.id
+        );
+        let options = [];
+        for (let question in questions) {
+          const question_options = await Option.getAllOptions(
+            questions[question].id
+          );
+          if (question_options.length < 2) {
+            request.flash(
+              "error",
+              "There should be atleast two options in each question"
+            );
+            request.flash(
+              "error",
+              "Please add atleast two options to the question below"
+            );
+            return response.redirect(
+              `/elections/${request.params.id}/newquestion/create/${questions[question].id}`
+            );
+          }
+          options.push(question_options);
+        }
 
-  })
+        if (questions.length < 1) {
+          request.flash(
+            "error",
+            "Please add atleast one question for this Election ballot"
+          );
+          return response.redirect(
+            `/elections/${request.params.id}/newquestion`
+          );
+        }
+
+        if (votersCount < 1) {
+          request.flash(
+            "error",
+            "Please add atleast one voter for this election"
+          );
+          return response.redirect(
+            `/elections/${request.params.id}/voters`
+          );
+        }
+
+        return response.render("election_preview", {
+          title: election.electionName,
+          electionId: request.params.id,
+          questions,
+          options,
+          csrfToken: request.csrfToken(),
+        });
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    } else if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
+  });
   app.get("/elections/:id/voters/new",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
     response.render("newVoter",{
       csrfToken:request.csrfToken(),
