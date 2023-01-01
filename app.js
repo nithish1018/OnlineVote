@@ -155,6 +155,12 @@ app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,respons
   console.log("Spaces found")
     return response.redirect("/election/create")
  }
+ const URLs= await Election.findElectionWithURL(url);
+ if(URLs.length>1){
+  request.flash("error","Sorry,Given custom string is already been used");
+  request.flash("error","Please Try again with another custom string");
+  return response.redirect("election/create");
+ }
 
 
   try{
@@ -219,6 +225,7 @@ app.get(
         questionsC:questionsCount,
         votersC:votersCount,
         customURL:election.customURL,
+        isRunning:election.isRunning,
       }) 
   }),
   app.get("/elections/:id/newquestion",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
@@ -427,6 +434,31 @@ app.get(
       return response.redirect("/");
     }
   });
+  app.put(
+    "/elections/:id/start",
+    connectEnsureLogin.ensureLoggedIn(),
+    async (request, response) => {
+      if (request.user.isWho === "admin") {
+        try {
+          const election = await Election.getElectionWithId(request.params.id);
+          if (request.user.id !== election.adminId) {
+            return response.json({
+              error: "Invalid Election Id",
+            });
+          }
+          const startElection = await Election.startElection(
+            request.params.id
+          );
+          return response.json(startElection);
+        } catch (error) {
+          console.log(error);
+          return response.status(422).json(error);
+        }
+      } else if (request.user.isWho === "voter") {
+        return response.redirect("/");
+      }
+    }
+  );
   app.get("/elections/:id/voters/new",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
     response.render("newVoter",{
       csrfToken:request.csrfToken(),

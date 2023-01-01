@@ -41,6 +41,27 @@ module.exports = (sequelize, DataTypes) => {
 
       })
     }
+    static async findElectionWithURL(customURL){
+      return this.findAll({
+        where:{
+          customURL
+        },
+        order: [["id", "ASC"]],
+      })
+    }
+    static startElection(id) {
+      return this.update(
+        {
+          isRunning: true,
+        },
+        {
+          returning: true,
+          where: {
+            id,
+          },
+        }
+      )};
+
   
     static  getElectionWithId(id) {
       return this.findOne({
@@ -60,7 +81,6 @@ module.exports = (sequelize, DataTypes) => {
       customURL:{
         type:DataTypes.STRING,
         allowNull:false,
-        unique:true,
       },
       isRunning:{
         defaultValue:false,

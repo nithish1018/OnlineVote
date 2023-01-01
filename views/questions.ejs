@@ -13,17 +13,34 @@
     <div><%- include('header.ejs') %></div>
   <br> <a href="/elections" class="px-3 py-3 text-xl underline text-green-400" > ->Elections Page</a> <br>
  <br> <p class="px-3 text-2xl" >Election: <%= title %>  </p> <br>
+ <% if (isRunning==true) { %>
+    <h4 class="px-3 py-3 text-2xl text-green-600">Your Election Is Started!!!</h4>
+    <h4 class="px-3 py-3 text-2xl text-red-600">You Cannot Edit Questions Or Voters Details Now!</h4>
+   <br> <h2 class="px-3 py-2 text-2xl"> Voters Can Cast Their Vote From Below URL</h2>
+ <a href="start/<%=customURL%>" class="px-3 py-2 text-xl underline text-blue-500"> <%= customURL %> </a>
   <p class="text-2xl px-3 py-2"> No of questions you have are: <%= questionsC %> </p>
+  <p class="text-2xl px-3 py-3"> No of voters you have are: <%= votersC %> </p>
+ <% } %>
+
+ <% if (isRunning==false) { %>
+    <p class="text-2xl px-3 py-2"> No of questions you have are: <%= questionsC %> </p>
   <a href="/elections/<%=id%>/newquestion" class="px-3 py-2 text-xl underline text-green-400">Manage This Election's Questions From Here</a>
 
   <p class="text-2xl px-3 py-3"> No of voters you have are: <%= votersC %> </p>
   
   <a href="/elections/<%=id%>/voters" class="px-3 py-2 text-xl underline text-green-400" >Manage This Election's Voters From Here</a> <br>
-
-  <% if (true) { %>
+<% } %>
+  <% if (isRunning==false) { %>
     
      <br> <br>   <a href="/elections/<%=id%>/election_preview" class="px-4 py-4 text-white wt-fit"> <button class="bg-green-600 hover:bg-green-800 rounded px-2 py-2"> Preview & Launch This Election</button></a>
-  
+<% } %>
+<% if (isRunning==true) { %>
+    
+  <br> <br>   <a href="#" class="px-4 py-4 text-white wt-fit"> <button class="bg-green-600 hover:bg-green-800 rounded px-2 py-2"> Check Results</button></a>
+<% } %>
+<% if (isRunning==true) { %>
+    
+  <br> <br>   <a href="#" class="px-4 py-4 text-white wt-fit"> <button class="bg-green-600 hover:bg-green-800 rounded px-2 py-2"> End The Election</button></a>
 <% } %>
   
 </body>
