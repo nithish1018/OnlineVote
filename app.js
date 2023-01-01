@@ -3,7 +3,7 @@ const express = require("express");
 var csrf = require("tiny-csrf");
 var cookieParser = require("cookie-parser");
 const app = express();
-const { Admin, Election ,Questions,Option,Voter} = require("./models");
+const { Admin, Election ,Questions,Option,Voter,ElectionAnswers} = require("./models");
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const connectEnsureLogin = require("connect-ensure-login");
@@ -138,7 +138,8 @@ app.post("/admin", async (request, response) => {
 });
 app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,response)=>{
 
- 
+  if(request.user.isWho=="admin")
+ {
   const nullString=(request.body.electionName).trim()
   if(nullString.length==0){
     request.flash("error","Election Name Should not be Null")
@@ -177,6 +178,10 @@ app.post("/elections",connectEnsureLogin.ensureLoggedIn(),async (request,respons
       request.flash("error", "Sorry this URL is already been use");
       return response.redirect("/elections");
     }
+ }
+ else if(request.user.isWho=="voter"){
+  return response.redirect("/")
+ }
 })
 app.post(
   "/session",

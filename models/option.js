@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey:"questionId",
         onDelete:"CASCADE"
       })
+      Option.hasMany(models.ElectionAnswers,{
+        foreignKey:"chosenOption",
+        
+      })
     }
     static async getAllOptions(questionId) {
       return this.findAll({
