@@ -34,8 +34,8 @@
   "devDependencies": {
     "cheerio": "^1.0.0-rc.12",
     "eslint": "^8.30.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-import": "^2.26.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.24.1",
     "eslint-plugin-n": "^15.6.0",
     "eslint-plugin-promise": "^6.1.1",
     "husky": "^8.0.2",
@@ -46,5 +46,13 @@
     "sequelize-cli": "^6.5.2",
     "supertest": "^6.2.4",
     "tiny-csrf": "^1.1.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nithish1018/OnlineVote.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nithish1018/OnlineVote/issues"
+  },
+  "homepage": "https://github.com/nithish1018/OnlineVote#readme"
 }

@@ -41,6 +41,25 @@ module.exports = (sequelize, DataTypes) => {
         questionId
       })
     }
+    static deleteOption(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
+    static updateOption({ option, id }) {
+      return this.update(
+        {
+          option,
+        },
+        {
+          where: {
+            id,
+          },
+        }
+      );
+    }
   }
   Option.init({
     option:{

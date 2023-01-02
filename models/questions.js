@@ -50,6 +50,13 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+    static deleteQuestion(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
     static getQuestionWithName(question,description){
       return this.findOne({
         where:{
@@ -64,6 +71,19 @@ module.exports = (sequelize, DataTypes) => {
           electionId
         }
       })
+    }
+    static updateQuestion({electionQuestion,questionDescription,id}){
+      return this.update({
+        electionQuestion,
+        questionDescription,
+      },
+      {
+        returning:true,
+        where:{
+          id
+        }
+      }
+      )
     }
 
   }

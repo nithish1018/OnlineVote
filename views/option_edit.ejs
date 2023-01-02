@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Edit option</title>
+    <script>
+        var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        function editOption() {
+            let id = <%=id%>;
+            let questionId = <%=questionId%>;
+            let optionId = <%=optionId%>;
+            let option = document.getElementById("option").value;
+            fetch(`/elections/${id}/newquestion/create/${questionId}/showoptions/${optionId}/edit`, {
+                method: "put",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({
+                    "_csrf":token,
+                    "option":option,
+                })
+            }).then((res)=>{
+                if (res.ok) {
+                    window.location.replace(`/elections/${id}/newquestion/create/${questionId}/showoptions`);
+                }
+            }).catch((err)=> console.error(err))
+        }
+    </script>
+</head>
+<body>
+    <div
+      class="relative flex min-h-screen flex-col justify-center overflow-hidden py-6 bg-white"
+    >
+      <div
+        class="relative bg-white px-6 pb-5 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-lg sm:rounded-lg sm:px-10"
+      >
+        <div class="mx-auto max-w-md">
+          <h2 class="text-2xl text-center font-bold my-5">
+            Edit That Option From Here
+          </h2>
+
+          <div class="divide-y divide-gray-300/50">
+            <div class="space-y-6 text-base leading-7 text-ray-600">
+              <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
+              <label
+                for="question"
+                class="text-md w-40 inline-block font-medium leading-5 text-gray-700"
+              >
+                New Option
+              </label>
+              <input
+                required
+                type="text"
+                id="option"
+                name="option"
+                class="bg-gray-100 inline-block rounded-lg shadow-md py-3 px-4 mb-5 text-base leading-6 placeolder-gray-500"
+                placeholder="Enter Option"
+                required
+              /><br />
+             
+              <button
+                type="button"
+                onclick="editOption()"
+                class="w-fit rounded-lg shadow-lg px-5 py-3 bg-green-500 text-white hover:bg-green-400 focus:outline-none focus block"
+              >
+                Update Option
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>

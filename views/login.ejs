@@ -14,25 +14,6 @@
     
             <%- include('header.ejs') %> 
             
-            <!-- <form action="/session" method="post">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <div class="py-3">
-                <label for="email">Email:</label>
-                <input type="email" name="email" class="border border-gray-300 text-gray-900 rounded p-2 w-full">
-                </div>
-                <div class="py-3">
-                <label for="password">Password</label>
-                <input type="password" name="password" class="border border-gray-300 text-gray-900 rounded p-2 w-full">
-                </div>
-                <div class="py-3">
-                <button type="submit" class="text-white bg-green-600 hover:big-green-800 font-medium rounded px-5 py-2">Sign in </button>
-                </div>
-                <div class="py-3">
-                    <button type="button" class="text-white bg-green-600 hover:big-green-800 font-medium rounded px-5 py-2"onclick="history.back()">Go Back </button>
-                    </div>
-
-            </form> -->
-            
             <div class="relative flex min-h-screen flex-col justify-center overflow-hidden py-6 bg-white ">
                 <div class="relative mx-auto mb-8 w-fit">
                     <% if(messages && messages.error && messages.error.length > 0)  { %>
