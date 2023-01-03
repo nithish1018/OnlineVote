@@ -109,13 +109,13 @@ app.get("/signup", (request, response) => {
   });
 });
 app.post("/admin", async (request, response) => {
-  const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
-  console.log(hashedPwd);
-  if(request.body.password.length<8){
-    request.flash("error","Password should be atleast of length 8");
-    response.redirect("/signup")
-  }
   try {
+    const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
+    console.log(hashedPwd);
+    if(request.body.password.length<8){
+      request.flash("error","Password should be atleast of length 8");
+      response.redirect("/signup")
+    }
     const admin = await Admin.create({
       firstName: request.body.firstName,
       lastName: request.body.lastName,
@@ -477,9 +477,7 @@ app.get(
     }
   );
   app.get("/elections/:id/newquestion/create",connectEnsureLogin.ensureLoggedIn(),async(request,response)=>{
-  
 
-       
     return response.render("create_question",{
       id: request.params.id,
       csrfToken:request.csrfToken(),
