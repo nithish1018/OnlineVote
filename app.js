@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-undef
 const express = require("express");
 var csrf = require("tiny-csrf");
@@ -90,7 +91,7 @@ passport.use(
     (username, password, done) => {
       Voter.findOne({ where: { voterUserId: username } })
         .then(async (user) => {
-          const result = await bcrypt.compare(password, user.password);
+          const result = await bcrypt.compare(password, user.voterPassword);
           if (result) {
             return done(null, user);
           } else {
@@ -98,7 +99,7 @@ passport.use(
           }
         })
         .catch(function () {
-          return done(null, false, { message: "Unrecognized Email" });
+          return done(null, false, { message: "Unrecognized UserID" });
         });
     }
   )
@@ -166,16 +167,6 @@ app.post(
         console.log("Spaces found");
         return response.redirect("/election/create");
       }
-      const URLs = await Election.findElectionWithURL(url);
-      if (URLs.length > 1) {
-        request.flash(
-          "error",
-          "Sorry,Given custom string is already been used"
-        );
-        request.flash("error", "Please Try again with another custom string");
-        return response.redirect("election/create");
-      }
-
       try {
         const thisElection = await Election.addElection({
           electionName: request.body.electionName,
@@ -736,9 +727,14 @@ app.post(
       return response.redirect(`/elections/${request.params.id}/voters/new`);
     }
     try {
+      const hashedPwd = await bcrypt.hash(
+        request.body.voterPassword,
+        saltRounds
+      );
+      console.log(hashedPwd);
       await Voter.addVoter({
         voterUserId: voterUserId,
-        voterPassword: voterPassword,
+        voterPassword: hashedPwd,
         electionId: request.params.id,
       });
       response.redirect(`/elections/${request.params.id}/voters`);
@@ -746,6 +742,85 @@ app.post(
       request.flash(error, error);
       response.redirect(`/elections/${request.params.id}/voters/new`);
     }
+  }
+);
+app.get("/e/:customURL", async (request, response) => {
+  if (!request.user) {
+    request.flash("error", "Please login before trying to Vote");
+    return response.redirect(`/e/${request.params.customURL}/voterlogin`);
+  }
+  if (request.user.isVoted) {
+    request.flash("error", "You have voted successfully");
+    return response.redirect(`/e/${request.params.customURL}/results`);
+  }
+  try {
+    const election = await Election.findElectionWithURL(
+      request.params.customURL
+    );
+    if (election.isEnded) {
+      return response.redirect(`/e/${request.params.customURL}/result`);
+    }
+    if (request.user.isWho === "voter") {
+      if (election.isRunning) {
+        const questions = await Questions.getQuestionWithId(election.id);
+        let options = [];
+        for (let question in questions) {
+          options.push(await Option.getAllOptions(questions[question].id));
+        }
+        return response.render("votingPage", {
+          title: election.electionName,
+          electionId: election.id,
+          questions,
+          options,
+          customURL: request.params.customURL,
+          csrfToken: request.csrfToken(),
+        });
+      } else {
+        return response.render("404");
+      }
+    } else if (request.user.isWho === "admin") {
+      request.flash("error", "You cannot vote as Admin");
+      request.flash("error", "Please signout as Admin before trying to vote");
+      return response.redirect(`/elections/${election.id}`);
+    }
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+app.get("/e/:customURL/voterlogin", async (request, response) => {
+  try {
+    if (request.user) {
+      return response.redirect(`/e/${request.params.customURL}`);
+    }
+
+    const election = await Election.findElectionWithURL(
+      request.params.customURL
+    );
+    if (election.isRunning && !election.isEnded) {
+      return response.render("voterlogin", {
+        title: "Login in as Voter",
+        customURL: request.params.customURL,
+        electionId: election.id,
+        csrfToken: request.csrfToken(),
+      });
+    } else {
+      request.flash("Election has ended");
+      return response.render("result");
+    }
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+app.post(
+  "/e/:customURL/voterlogin",
+  passport.authenticate("voter", {
+    failureFlash: true,
+    failureRedirect: "back",
+  }),
+  async (request, response) => {
+    return response.redirect(`/e/${request.params.customURL}`);
   }
 );
 app.get("/signout", (request, response, next) => {

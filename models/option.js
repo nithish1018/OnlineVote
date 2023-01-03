@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Option extends Model {
     /**
@@ -11,14 +9,13 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Option.belongsTo(models.Questions,{
-        foreignKey:"questionId",
-        onDelete:"CASCADE"
-      })
-      Option.hasMany(models.ElectionAnswers,{
-        foreignKey:"chosenOption",
-        
-      })
+      Option.belongsTo(models.Questions, {
+        foreignKey: "questionId",
+        onDelete: "CASCADE",
+      });
+      Option.hasMany(models.ElectionAnswers, {
+        foreignKey: "chosenOption",
+      });
     }
     static async getAllOptions(questionId) {
       return this.findAll({
@@ -35,11 +32,11 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
-    static async addNewOption({option,questionId}){
+    static async addNewOption({ option, questionId }) {
       return this.create({
         option,
-        questionId
-      })
+        questionId,
+      });
     }
     static deleteOption(id) {
       return this.destroy({
@@ -61,14 +58,17 @@ module.exports = (sequelize, DataTypes) => {
       );
     }
   }
-  Option.init({
-    option:{
-      type:DataTypes.STRING,
-      allowNull:false
+  Option.init(
+    {
+      option: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+    },
+    {
+      sequelize,
+      modelName: "Option",
     }
-  }, {
-    sequelize,
-    modelName: 'Option',
-  });
+  );
   return Option;
 };

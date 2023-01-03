@@ -49,7 +49,7 @@ describe("Online voting application", function () {
     });
     expect(res.statusCode).toBe(302);
   });
- // sign in
+  // sign in
   test("Sign in", async () => {
     const agent = request.agent(server);
     let res = await agent.get("/elections");
@@ -93,77 +93,79 @@ describe("Online voting application", function () {
       _csrf: csrfToken,
     });
     const groupedElectionsResponse = await agent
-    .get("/elections")
-    .set("Accept", "application/json");
-  const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
-  const electionCount = parsedGroupedResponse.elections.length;
-  const latestElection = parsedGroupedResponse.elections[electionCount - 1];
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
+    const electionCount = parsedGroupedResponse.elections.length;
+    const latestElection = parsedGroupedResponse.elections[electionCount - 1];
 
-  //Now adding a question
-  res = await agent.get(`/elections/${latestElection.id}/newquestion/create`);
-  csrfToken = extractCsrfToken(res);
-  let response = await agent
-    .post(`/elections/${latestElection.id}/newquestion/create`)
-    .send({
-      question: "Who is spiderman?",
-      description: "No one knows",
+    //Now adding a question
+    res = await agent.get(`/elections/${latestElection.id}/newquestion/create`);
+    csrfToken = extractCsrfToken(res);
+    let response = await agent
+      .post(`/elections/${latestElection.id}/newquestion/create`)
+      .send({
+        question: "Who is spiderman?",
+        description: "No one knows",
+        _csrf: csrfToken,
+      });
+    expect(response.statusCode).toBe(302);
+  });
+
+  //Adding Options
+  test("Adding an Option to the created question", async () => {
+    const agent = request.agent(server);
+    await login(agent, "peter@gmail.com", "12345678");
+
+    //Creating a new Election
+    let res = await agent.get("/election/create");
+    let csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "NewElection",
+      customURL: "newstring",
       _csrf: csrfToken,
     });
-  expect(response.statusCode).toBe(302);
+    const groupedElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
+    const electionCount = parsedGroupedResponse.elections.length;
+    const latestElection = parsedGroupedResponse.elections[electionCount - 1];
+
+    //Now adding a question
+    res = await agent.get(`/elections/${latestElection.id}/newquestion/create`);
+    csrfToken = extractCsrfToken(res);
+    await agent
+      .post(`/elections/${latestElection.id}/newquestion/create`)
+      .send({
+        question: "Does Area 51 is real?",
+        description: "No one knows",
+        _csrf: csrfToken,
+      });
+
+    const groupedQuestionsResponse = await agent
+      .get(`/elections/${latestElection.id}/newquestion`)
+      .set("Accept", "application/json");
+    const parsedQuestionsGroupedResponse = JSON.parse(
+      groupedQuestionsResponse.text
+    );
+    const questionCount = parsedQuestionsGroupedResponse.questions.length;
+    const latestQuestion =
+      parsedQuestionsGroupedResponse.questions[questionCount - 1];
+
+    res = await agent.get(
+      `/elections/${latestElection.id}/newquestion/create/${latestQuestion.id}`
+    );
+    csrfToken = extractCsrfToken(res);
+
+    res = await agent
+      .post(
+        `/elections/${latestElection.id}/newquestion/create/${latestQuestion.id}`
+      )
+      .send({
+        _csrf: csrfToken,
+        option: "Test option",
+      });
+    expect(res.statusCode).toBe(302);
+  });
 });
-
-//Adding Options
-test("Adding an Option to the created question", async () => {
-  const agent = request.agent(server);
-  await login(agent, "peter@gmail.com", "12345678");
-
- //Creating a new Election
- let res = await agent.get("/election/create");
- let csrfToken = extractCsrfToken(res);
- await agent.post("/elections").send({
-   electionName: "NewElection",
-   customURL: "newstring",
-   _csrf: csrfToken,
- });
- const groupedElectionsResponse = await agent
- .get("/elections")
- .set("Accept", "application/json");
-const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
-const electionCount = parsedGroupedResponse.elections.length;
-const latestElection = parsedGroupedResponse.elections[electionCount - 1];
-
-//Now adding a question
-res = await agent.get(`/elections/${latestElection.id}/newquestion/create`);
-csrfToken = extractCsrfToken(res);
- await agent
- .post(`/elections/${latestElection.id}/newquestion/create`)
- .send({
-   question: "Does Area 51 is real?",
-   description: "No one knows",
-   _csrf: csrfToken,
- });
-
-  const groupedQuestionsResponse = await agent
-    .get(`/elections/${latestElection.id}/newquestion`)
-    .set("Accept", "application/json");
-  const parsedQuestionsGroupedResponse = JSON.parse(
-    groupedQuestionsResponse.text
-  );
-  const questionCount = parsedQuestionsGroupedResponse.questions.length;
-  const latestQuestion =
-    parsedQuestionsGroupedResponse.questions[questionCount - 1];
-
-  res = await agent.get(
-    `/elections/${latestElection.id}/newquestion/create/${latestQuestion.id}`
-  );
-  csrfToken = extractCsrfToken(res);
-
-  res = await agent
-    .post(`/elections/${latestElection.id}/newquestion/create/${latestQuestion.id}`)
-    .send({
-      _csrf: csrfToken,
-      option: "Test option",
-    });
-  expect(res.statusCode).toBe(302);
-});
-})

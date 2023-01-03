@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Questions extends Model {
     /**
@@ -14,19 +12,19 @@ module.exports = (sequelize, DataTypes) => {
       Questions.belongsTo(models.Election, {
         foreignKey: "electionId",
       });
-      Questions.hasMany(models.Option,{
-        foreignKey:"questionId"
-      })
-      Questions.hasMany(models.ElectionAnswers,{
-        foreignKey:"questionId"
-      })
+      Questions.hasMany(models.Option, {
+        foreignKey: "questionId",
+      });
+      Questions.hasMany(models.ElectionAnswers, {
+        foreignKey: "questionId",
+      });
     }
-    static addNewQuestion({question,description,electionId}){
+    static addNewQuestion({ question, description, electionId }) {
       return this.create({
-        electionQuestion:question,
-        questionDescription:description,
-        electionId
-      })
+        electionQuestion: question,
+        questionDescription: description,
+        electionId,
+      });
     }
     static async getAllQuestions(electionId) {
       return await this.findAll({
@@ -36,14 +34,14 @@ module.exports = (sequelize, DataTypes) => {
         order: [["id", "ASC"]],
       });
     }
-    static async countOFQuestions(electionId){
+    static async countOFQuestions(electionId) {
       return await this.count({
-        where:{
-          electionId
-        }
-      })
+        where: {
+          electionId,
+        },
+      });
     }
-    static  getQuestionWithId(id) {
+    static getQuestionWithId(id) {
       return this.findOne({
         where: {
           id,
@@ -57,45 +55,48 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
-    static getQuestionWithName(question,description){
+    static getQuestionWithName(question, description) {
       return this.findOne({
-        where:{
-          electionQuestion:question,
-          questionDescription:description,
-        }
-      })
+        where: {
+          electionQuestion: question,
+          questionDescription: description,
+        },
+      });
     }
-    static async getAllQuestions(electionId){
+    static async getAllQuestions(electionId) {
       return this.findAll({
-        where:{
-          electionId
-        }
-      })
+        where: {
+          electionId,
+        },
+      });
     }
-    static updateQuestion({electionQuestion,questionDescription,id}){
-      return this.update({
-        electionQuestion,
-        questionDescription,
-      },
-      {
-        returning:true,
-        where:{
-          id
+    static updateQuestion({ electionQuestion, questionDescription, id }) {
+      return this.update(
+        {
+          electionQuestion,
+          questionDescription,
+        },
+        {
+          returning: true,
+          where: {
+            id,
+          },
         }
-      }
-      )
+      );
     }
-
   }
-  Questions.init({
-    electionQuestion:{
-      type:DataTypes.STRING,
-      allowNull:false
+  Questions.init(
+    {
+      electionQuestion: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      questionDescription: DataTypes.STRING,
     },
-    questionDescription: DataTypes.STRING
-  }, {
-    sequelize,
-    modelName: 'Questions',
-  });
+    {
+      sequelize,
+      modelName: "Questions",
+    }
+  );
   return Questions;
 };

@@ -15,12 +15,12 @@ module.exports = (sequelize, DataTypes) => {
       Election.hasMany(models.Questions, {
         foreignKey: "electionId",
       });
-      Election.hasMany(models.Voter,{
-        foreignKey:"electionId"
-      })
-      Election.hasMany(models.ElectionAnswers,{
-        foreignKey:"electionId"
-      })
+      Election.hasMany(models.Voter, {
+        foreignKey: "electionId",
+      });
+      Election.hasMany(models.ElectionAnswers, {
+        foreignKey: "electionId",
+      });
     }
     static addElection({ electionName, adminId, customURL }) {
       return this.create({
@@ -29,28 +29,27 @@ module.exports = (sequelize, DataTypes) => {
         adminId,
       });
     }
-    static getAllURL(adminId){
+    static getAllURL(adminId) {
       return this.findAll({
-        where:adminId,
-        attributes:['customURL']
-      })
+        where: adminId,
+        attributes: ["customURL"],
+      });
     }
-    static getAllElections(adminId){
+    static getAllElections(adminId) {
       return this.findAll({
-        where:{
-          adminId
+        where: {
+          adminId,
         },
         order: [["id", "ASC"]],
-
-      })
+      });
     }
-    static async findElectionWithURL(customURL){
-      return this.findAll({
-        where:{
-          customURL
+    static async findElectionWithURL(customURL) {
+      return this.findOne({
+        where: {
+          customURL,
         },
         order: [["id", "ASC"]],
-      })
+      });
     }
     static startElection(id) {
       return this.update(
@@ -63,10 +62,10 @@ module.exports = (sequelize, DataTypes) => {
             id,
           },
         }
-      )};
+      );
+    }
 
-  
-    static  getElectionWithId(id) {
+    static getElectionWithId(id) {
       return this.findOne({
         where: {
           id,
@@ -77,21 +76,22 @@ module.exports = (sequelize, DataTypes) => {
 
   Election.init(
     {
-      electionName:{
-        type:DataTypes.STRING,
-        allowNull:false,
+      electionName: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
-      customURL:{
-        type:DataTypes.STRING,
-        allowNull:false,
+      customURL: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
       },
-      isRunning:{
-        defaultValue:false,
-        type:DataTypes.BOOLEAN
+      isRunning: {
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
       },
-      isEnded:{
-        defaultValue:false,
-        type:DataTypes.BOOLEAN
+      isEnded: {
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
       },
     },
     {
