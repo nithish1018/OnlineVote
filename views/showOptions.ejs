@@ -29,6 +29,14 @@
    </head>
    <body>
     <%- include('header.ejs') %> 
+   
+        <div class="relative mx-auto mb-8 w-fit">
+            <% if(messages && messages.error && messages.error.length > 0)  { %>
+               <% for(var i=0; i<messages.error.length; i++) { %>
+                       <li class="text-white rounded px-40 py-4 bg-red-500"> <%= messages.error[i] %></li>
+               <% } %>
+             <% } %>
+          </div>
    <br> <a href="/elections/<%=id%>/newquestion" class="text-xl underline text-green-400 px-5 py-3"> -->All Questions </a>
     <h3 class="px-5 py-3 text-2xl "> Question: <%= questionName %>  </h3>
      

@@ -29,13 +29,14 @@
   <%- include('header.ejs') %> 
 
   <br> <a href="/elections" class="px-3 py-3 text-xl underline text-green-400" > ->Elections Page</a> <br>
- <br> <div class="relative mx-auto mb-8 w-fit">
-    <% if(messages && messages.error && messages.error.length > 0)  { %>
-       <% for(var i=0; i<messages.error.length; i++) { %>
-               <li class="text-white rounded px-40 py-4 bg-red-500"> <%= messages.error[i] %></li>
+ <br> 
+  <div class="relative mx-auto mb-8 w-fit">
+      <% if(messages && messages.error && messages.error.length > 0)  { %>
+         <% for(var i=0; i<messages.error.length; i++) { %>
+                 <li class="text-white rounded px-40 py-4 bg-red-500"> <%= messages.error[i] %></li>
+         <% } %>
        <% } %>
-     <% } %>
-  </div>
+    </div>
 
     <h3 class="px-2 py-3 text-xl"> Election: <%= title %> </h3>
     <% if (questions.length==0) { %>
