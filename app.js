@@ -762,7 +762,7 @@ app.get("/e/:customURL", async (request, response) => {
     }
     if (request.user.isWho === "voter") {
       if (election.isRunning) {
-        const questions = await Questions.getQuestionWithId(election.id);
+        const questions = await Questions.getAllQuestions(election.id);
         let options = [];
         for (let question in questions) {
           options.push(await Option.getAllOptions(questions[question].id));
@@ -770,6 +770,7 @@ app.get("/e/:customURL", async (request, response) => {
         return response.render("votingPage", {
           title: election.electionName,
           electionId: election.id,
+          electionName: election.electionName,
           questions,
           options,
           customURL: request.params.customURL,
@@ -782,6 +783,40 @@ app.get("/e/:customURL", async (request, response) => {
       request.flash("error", "You cannot vote as Admin");
       request.flash("error", "Please signout as Admin before trying to vote");
       return response.redirect(`/elections/${election.id}`);
+    }
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+
+app.post("/e/:customURL", async (request, response) => {
+  if (!request.user) {
+    request.flash("error", "Please login before trying to Vote");
+    return response.redirect(`/e/${request.params.customURL}/voterlogin`);
+  }
+  if (request.user.isVoted) {
+    request.flash("error", "You have voted successfully");
+    return response.redirect(`/e/${request.params.customURL}/results`);
+  }
+  try {
+    let election = await Election.findElectionWithURL(request.params.customURL);
+    if (election.isEnded) {
+      request.flash("error", "Election has already ended, You cant't vote now");
+      return response.redirect(`/elections/${request.params.id}/results`);
+    }
+    let questions = await Questions.getAllQuestions(election.id);
+    for (let question of questions) {
+      let qid = `answer-${question.id}`;
+      let chosenOption = request.body[qid];
+      await ElectionAnswers.addAnswer({
+        voterId: request.user.id,
+        electionId: election.id,
+        questionId: question.id,
+        chosenOption: chosenOption,
+      });
+      await Voter.isVoted(request.user.id);
+      return response.redirect(`/e/${request.params.customURL}/results`);
     }
   } catch (error) {
     console.log(error);
@@ -823,6 +858,9 @@ app.post(
     return response.redirect(`/e/${request.params.customURL}`);
   }
 );
+app.get("/e/:customURL/results", async (request, response) => {
+  response.render("results");
+});
 app.get("/signout", (request, response, next) => {
   request.logout((err) => {
     if (err) {

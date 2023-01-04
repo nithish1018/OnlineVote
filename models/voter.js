@@ -23,6 +23,18 @@ module.exports = (sequelize, DataTypes) => {
         electionId,
       });
     }
+    static async isVoted(id) {
+      return await this.update(
+        {
+          isVoted: true,
+        },
+        {
+          where: {
+            id,
+          },
+        }
+      );
+    }
     static async getAllVoters(electionId) {
       return await this.findAll({
         where: {
