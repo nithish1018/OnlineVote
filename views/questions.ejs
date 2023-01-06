@@ -15,10 +15,10 @@
     <br> <div class="relative mx-auto mb-8 w-fit">
           <% if(messages && messages.error && messages.error.length > 0)  { %>
              <% for(var i=0; i<messages.error.length; i++) { %>
-                     <li class="text-white rounded px-40 py-4 bg-red-500"> <%= messages.error[i] %></li>
+                     <li class="text-white rounded px-40 py-4 bg-red-500"> <%= messages.error[i] %></li> <br>
              <% } %>
            <% } %>
-        </div>
+        </div> 
   <br> <a href="/elections" class="px-3 py-3 text-xl underline text-green-400" > ->Elections Page</a> <br>
  <br> <p class="px-3 text-2xl" >Election: <%= title %>  </p> <br>
  <% if (isRunning==true) { %>

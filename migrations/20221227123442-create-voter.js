@@ -11,6 +11,7 @@ module.exports = {
       },
       voterUserId: {
         type: Sequelize.STRING,
+        unique: true,
       },
       voterPassword: {
         type: Sequelize.STRING,

@@ -732,14 +732,16 @@ app.post(
         saltRounds
       );
       console.log(hashedPwd);
-      await Voter.addVoter({
+      const voter = await Voter.addVoter({
         voterUserId: voterUserId,
         voterPassword: hashedPwd,
         electionId: request.params.id,
       });
       response.redirect(`/elections/${request.params.id}/voters`);
     } catch (error) {
-      request.flash(error, error);
+      request.flash("error", "Sorry,This Voter UserId already exists");
+      request.flash("error", "Please add Voter with unique VoterId");
+
       response.redirect(`/elections/${request.params.id}/voters/new`);
     }
   }
@@ -776,8 +778,6 @@ app.get("/e/:customURL", async (request, response) => {
           customURL: request.params.customURL,
           csrfToken: request.csrfToken(),
         });
-      } else {
-        return response.render("404");
       }
     } else if (request.user.isWho === "admin") {
       request.flash("error", "You cannot vote as Admin");
