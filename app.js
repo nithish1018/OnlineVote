@@ -110,15 +110,18 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((user, done) => {
   done(null, user);
 });
+//login
 app.get("/login", (request, response) => {
   response.render("login", { title: "Login", csrfToken: request.csrfToken() });
 });
+//signup
 app.get("/signup", (request, response) => {
   response.render("signup", {
     title: "Signup",
     csrfToken: request.csrfToken(),
   });
 });
+//Add admin
 app.post("/admin", async (request, response) => {
   try {
     const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
@@ -146,6 +149,7 @@ app.post("/admin", async (request, response) => {
     return response.redirect("/signup");
   }
 });
+//Add Elections
 app.post(
   "/elections",
   connectEnsureLogin.ensureLoggedIn(),
@@ -185,6 +189,7 @@ app.post(
     }
   }
 );
+//Login user
 app.post(
   "/session",
   passport.authenticate("admin", {
@@ -196,6 +201,7 @@ app.post(
     response.redirect("/elections");
   }
 );
+//Get elections
 app.get(
   "/elections",
   connectEnsureLogin.ensureLoggedIn(),
@@ -219,6 +225,7 @@ app.get(
     }
   }
 ),
+  //Election management Page
   app.get(
     "/elections/:id",
     connectEnsureLogin.ensureLoggedIn(),
@@ -241,6 +248,7 @@ app.get(
       });
     }
   ),
+  //Add question
   app.get(
     "/elections/:id/newquestion",
     connectEnsureLogin.ensureLoggedIn(),
@@ -278,6 +286,7 @@ app.get(
       }
     }
   );
+//Edit question
 app.get(
   "/thiselection/:id/question/:questionId/edit",
   connectEnsureLogin.ensureLoggedIn(),
@@ -316,6 +325,7 @@ app.get(
     }
   }
 );
+//Edit option
 app.get(
   "/elections/:id/newquestion/create/:questionId/showoptions/:optionId/edit",
   connectEnsureLogin.ensureLoggedIn(),
@@ -352,6 +362,7 @@ app.get(
     }
   }
 );
+//update option
 app.put(
   "/elections/:id/newquestion/create/:questionId/showoptions/:optionId/edit",
   connectEnsureLogin.ensureLoggedIn(),
@@ -389,6 +400,7 @@ app.put(
     }
   }
 );
+//delete question
 app.delete(
   "/elections/:id/newquestion/create/:questionId/showoptions/:optionId/delete",
   connectEnsureLogin.ensureLoggedIn(),
@@ -417,6 +429,7 @@ app.delete(
     }
   }
 );
+//update question
 app.put(
   "/elections/:id/question/:questionId/edit",
   connectEnsureLogin.ensureLoggedIn(),
@@ -450,6 +463,7 @@ app.put(
     }
   }
 );
+//delete question
 app.delete(
   "/elections/:id/questions/:questionId",
   connectEnsureLogin.ensureLoggedIn(),
@@ -471,7 +485,11 @@ app.delete(
           request.params.id
         );
         if (questionsCount == 1) {
-          return response.json("Atleast One Question Should Be There");
+          request.flash("error", "Sorry, You Cannot Delete This Question!");
+          request.flash(
+            "error",
+            "Atleast One Question Should Be Present In Ballot"
+          );
         }
         if (questionsCount > 1) {
           const del = await Questions.deleteQuestion(request.params.questionId);
@@ -488,6 +506,7 @@ app.delete(
     }
   }
 );
+//New question Form Page
 app.get(
   "/elections/:id/newquestion/create",
   connectEnsureLogin.ensureLoggedIn(),
@@ -498,6 +517,7 @@ app.get(
     });
   }
 );
+//All options page
 app.get(
   "/elections/:id/newquestion/create/:questionId/showoptions",
   connectEnsureLogin.ensureLoggedIn(),
@@ -520,6 +540,7 @@ app.get(
     }
   }
 );
+//Add election page
 app.get(
   "/election/create",
   connectEnsureLogin.ensureLoggedIn(),
@@ -530,6 +551,7 @@ app.get(
     });
   }
 );
+//Add option
 app.post(
   "/elections/:id/newquestion/create/:questionId",
   connectEnsureLogin.ensureLoggedIn(),
@@ -545,6 +567,7 @@ app.post(
     );
   }
 );
+//Get options
 app.get(
   "/elections/:id/newquestion/create/:questionId",
   connectEnsureLogin.ensureLoggedIn(),
@@ -557,6 +580,7 @@ app.get(
     });
   }
 );
+//Add new question
 app.post(
   "/elections/:id/newquestion/create",
   connectEnsureLogin.ensureLoggedIn(),
@@ -594,6 +618,7 @@ app.post(
     }
   }
 );
+//Get voters
 app.get(
   "/elections/:id/voters",
   connectEnsureLogin.ensureLoggedIn(),
@@ -611,6 +636,7 @@ app.get(
     });
   }
 );
+//Election preview page
 app.get(
   "/elections/:id/election_preview",
   connectEnsureLogin.ensureLoggedIn(),
@@ -679,6 +705,7 @@ app.get(
     }
   }
 );
+//Update Election Running status
 app.put(
   "/elections/:id/start",
   connectEnsureLogin.ensureLoggedIn(),
@@ -702,6 +729,7 @@ app.put(
     }
   }
 );
+//New Voter page
 app.get(
   "/elections/:id/voters/new",
   connectEnsureLogin.ensureLoggedIn(),
@@ -712,6 +740,7 @@ app.get(
     });
   }
 );
+//Add new voter
 app.post(
   "/elections/:id/voters/new",
   connectEnsureLogin.ensureLoggedIn(),
@@ -746,6 +775,7 @@ app.post(
     }
   }
 );
+//Get voting page
 app.get("/e/:customURL", async (request, response) => {
   if (!request.user) {
     request.flash("error", "Please login before trying to Vote");
@@ -789,7 +819,7 @@ app.get("/e/:customURL", async (request, response) => {
     return response.status(422).json(error);
   }
 });
-
+//Submitting Election Answers
 app.post("/e/:customURL", async (request, response) => {
   if (!request.user) {
     request.flash("error", "Please login before trying to Vote");
@@ -823,6 +853,7 @@ app.post("/e/:customURL", async (request, response) => {
     return response.status(422).json(error);
   }
 });
+//Voter login page
 app.get("/e/:customURL/voterlogin", async (request, response) => {
   try {
     if (request.user) {
@@ -848,6 +879,7 @@ app.get("/e/:customURL/voterlogin", async (request, response) => {
     return response.status(422).json(error);
   }
 });
+//checking voter login
 app.post(
   "/e/:customURL/voterlogin",
   passport.authenticate("voter", {
@@ -858,9 +890,11 @@ app.post(
     return response.redirect(`/e/${request.params.customURL}`);
   }
 );
+//Get results page
 app.get("/e/:customURL/results", async (request, response) => {
   response.render("results");
 });
+//Sign out
 app.get("/signout", (request, response, next) => {
   request.logout((err) => {
     if (err) {
