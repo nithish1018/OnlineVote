@@ -145,7 +145,9 @@ app.post("/admin", async (request, response) => {
       }
     });
   } catch (error) {
-    request.flash("error", error.message);
+    request.flash("error", "Admin with same Email Already Exist");
+    request.flash("error", "Please Login, Instead of signup");
+
     return response.redirect("/signup");
   }
 });
