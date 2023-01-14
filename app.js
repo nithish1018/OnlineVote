@@ -620,6 +620,80 @@ app.post(
     }
   }
 );
+//Get admin password reset page
+app.get(
+  "/admin/passwordReset",
+  connectEnsureLogin.ensureLoggedIn(),
+  (request, response) => {
+    if (request.user.isWho === "admin") {
+      response.render("AdminPasswordReset", {
+        csrfToken: request.csrfToken(),
+      });
+    } else if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
+  }
+);
+//Update admin password
+app.post(
+  "/admin/passwordReset",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.isWho === "admin") {
+      if (!request.body.oldpassword) {
+        request.flash("error", "Old Password Field Cannot Be Empty");
+        return response.redirect("/admin/passwordReset");
+      }
+      if (!request.body.newpassword) {
+        request.flash("error", "New Password Field Cannot Be Empty");
+        return response.redirect("/admin/passwordReset");
+      }
+      if (request.body.newpassword.length < 8) {
+        request.flash("error", "Password length should be atleast 8");
+        return response.redirect("/admin/passwordReset");
+      }
+      const res = await bcrypt.compare(
+        request.body.newpassword,
+        request.user.password
+      );
+      if (res) {
+        request.flash(
+          "error",
+          "New password cannot be same as existing password"
+        );
+        return response.redirect("/admin/passwordReset");
+      }
+      const hashedNewPwd = await bcrypt.hash(
+        request.body.newpassword,
+        saltRounds
+      );
+      const result = await bcrypt.compare(
+        request.body.oldpassword,
+        request.user.password
+      );
+      if (result) {
+        try {
+          Admin.findOne({ where: { email: request.user.email } }).then(
+            (user) => {
+              user.resetPassword(hashedNewPwd);
+            }
+          );
+          request.flash("success", "Password changed successfully");
+          return response.redirect("/elections");
+        } catch (error) {
+          console.log(error);
+          return response.status(422).json(error);
+        }
+      } else {
+        request.flash("error", "Incorrect Old Password");
+        return response.redirect("/admin/passwordReset");
+      }
+    } else if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
+  }
+);
+
 //Get voters
 app.get(
   "/elections/:id/voters",
