@@ -26,7 +26,7 @@ app.use(cookieParser("shh! some secret string"));
 app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
 const path = require("path");
 // eslint-disable-next-line no-undef
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "/public")));
 const flash = require("connect-flash");
 // eslint-disable-next-line no-unused-vars
 const questions = require("./models/questions");

@@ -17,7 +17,7 @@
   </title>
 </head>
 
-<body class="bg-red-200">
+<body class="bg-gray-100">
     <%- include('header.ejs') %> 
   <div class=" flex  text-black antialiased flex-col  overflow-hidden py-6 sm:py-12 px-20">
     <div class="w-full">
@@ -30,7 +30,7 @@
             <% } %>
               <% } %>
       </div>
-      <div class="flex flex-col gap-6 divide-y-2 divide-white">
+      <div class="flex flex-col gap-6 divide-y-2 divide-black">
         <span class="text-5xl font-light mb-8">
           <%= electionName %> - Results
         </span>
@@ -56,6 +56,7 @@
                 labels: ["Completed voters", "Pending voters"],
                 datasets: [{
                   data: [completed, pending],
+                  borderColor: "#000000",
                   backgroundColor: [
                     'rgb(113, 232, 245)',
                     'rgb(245, 167, 113)'
@@ -66,7 +67,7 @@
                 plugins: {  // 'legend' now within object 'plugins {}'
                   legend: {
                     labels: {
-                      color: "white",  // not 'fontColor:' anymore
+                      color: "black",  // not 'fontColor:' anymore
                       // fontSize: 18  // not 'fontSize:' anymore
                       font: {
                         size: 18 // 'size' now within object 'font {}'
@@ -81,7 +82,7 @@
         <ol class="list-decimal mb-5 py-5 text-3xl">
           <p class="text-4xl font-semibold text-black-200 mb-4">Votes recieved:</p>
           <% for(let i=0; i<questions.length; i++) { %>
-            <li class="my-4 bg-red-300 rounded-md border border-white ">
+            <li class="my-4 bg-gray-200 rounded-md border border-black ">
               <div class="flex justify-between my-3 items-center">
                 <div class="pl-4 py-1 divide-y">
                   <div>
@@ -97,11 +98,10 @@
                       <% for(let j=0; j<options[i].length; j++) { %>
                         <li class="option-item my-2 text-2xl grid grid-cols-10 text-black items-center">
                           <% if (optionsCount[i][j]===winners[i]) {%>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                              stroke="currentColor" class="w-5 h-5">
-                              <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" />
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+                              </svg>
+                              
                             <% } %>
                               <label class=" col-start-2 col-span-4 text-xl text-black-400"><span class="text-black">
                                   <%= options[i][j].option %>
@@ -126,21 +126,21 @@
                   data: {
                     labels: optionsL,
                     datasets: [{
-                      label: '# of Votes',
+                      label: ' Votes',
                       data: optionsCount,
                       borderWidth: 1,
-                      borderColor: "#fff",
+                      borderColor: "#000000",
                       backgroundColor: 'rgb(120, 245, 113)',
                     }]
                   },
                   options: {
-                    plugins: {  // 'legend' now within object 'plugins {}'
+                    plugins: {  
                       legend: {
                         labels: {
-                          color: "white",  // not 'fontColor:' anymore
-                          // fontSize: 18  // not 'fontSize:' anymore
+                          color: "black", 
+                          
                           font: {
-                            size: 18 // 'size' now within object 'font {}'
+                            size: 18 
                           }
                         }
                       }
@@ -148,7 +148,7 @@
                     scales: {
                       y: {  
                         ticks: {
-                          color: "white", 
+                          color: "black", 
                           
                           font: {
                             size: 18, 
@@ -157,12 +157,12 @@
                           beginAtZero: true
                         },
                         grid: {
-                          color: '#fff', 
+                          color: '#000', 
                         }
                       },
                       x: { 
                         ticks: {
-                          color: "white",  
+                          color: "black",  
                           
                           font: {
                             size: 14 
@@ -171,7 +171,7 @@
                           beginAtZero: true
                         },
                         grid: {
-                          color: '#fff',  
+                          color: '#000',  
                         }
                       }
                     }
