@@ -232,22 +232,38 @@ app.get(
     "/elections/:id",
     connectEnsureLogin.ensureLoggedIn(),
     async (request, response) => {
-      const election = await Election.getElectionWithId(request.params.id);
-      const questionsCount = await Questions.countOFQuestions(
-        request.params.id
-      );
+      if (request.user.isWho === "admin") {
+        try {
+          const election = await Election.getElectionWithId(request.params.id);
+          const customURL = election.customURL;
+          if (request.user.id !== election.adminId) {
+            request.flash("error", "Invalid election ID");
+            return response.redirect("/elections");
+          }
+          if (election.isEnded) {
+            return response.redirect(`/e/${customURL}/results`);
+          }
+          const questionsCount = await Questions.countOFQuestions(
+            request.params.id
+          );
 
-      const votersCount = await Voter.countOFVoters(request.params.id);
-      console.log(questionsCount);
-      return response.render("questions", {
-        id: request.params.id,
-        title: election.electionName,
-        csrfToken: request.csrfToken(),
-        questionsC: questionsCount,
-        votersC: votersCount,
-        customURL: election.customURL,
-        isRunning: election.isRunning,
-      });
+          const votersCount = await Voter.countOFVoters(request.params.id);
+          console.log(questionsCount);
+          return response.render("questions", {
+            id: request.params.id,
+            title: election.electionName,
+            csrfToken: request.csrfToken(),
+            questionsC: questionsCount,
+            votersC: votersCount,
+            customURL: election.customURL,
+            isRunning: election.isRunning,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      } else if (request.user.isWho == "voter") {
+        return response.redirect("/");
+      }
     }
   ),
   //Add question
@@ -805,6 +821,37 @@ app.put(
     }
   }
 );
+// Stopping an election
+app.put(
+  "/elections/:electionId/stop",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.isWho === "admin") {
+      try {
+        const election = await Election.getElectionWithId(
+          request.params.electionId
+        );
+        if (request.user.id !== election.adminId) {
+          return response.json({
+            error: "Invalid Election ID",
+          });
+        }
+        if (!election.isRunning) {
+          return response.json("Cannot end when election hasn't launched yet");
+        }
+        const stopElection = await Election.stopElection(
+          request.params.electionId
+        );
+        return response.json(stopElection);
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    } else if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
+  }
+);
 //New Voter page
 app.get(
   "/elections/:id/voters/new",
@@ -913,7 +960,7 @@ app.post("/e/:customURL", async (request, response) => {
     }
     let questions = await Questions.getAllQuestions(election.id);
     for (let question of questions) {
-      let qid = `answer-${question.id}`;
+      let qid = `q-${question.id}`;
       let chosenOption = request.body[qid];
       await ElectionAnswers.addAnswer({
         voterId: request.user.id,
@@ -968,7 +1015,61 @@ app.post(
 );
 //Get results page
 app.get("/e/:customURL/results", async (request, response) => {
-  response.render("results");
+  try {
+    const election = await Election.findElectionWithURL(
+      request.params.customURL
+    );
+    if (!election.isRunning && !election.isEnded) {
+      return response.status(404).render("error");
+    }
+    if (!election.isEnded) {
+      return response.render("afterVoting");
+    }
+    const questions = await Questions.getAllQuestions(election.id);
+    const answers = await ElectionAnswers.getElectionResults(election.id);
+    let options = [];
+    let optionLabels = [];
+    let optionsCount = [];
+    let winners = [];
+    for (let question in questions) {
+      let opts = await Option.getAllOptions(questions[question].id);
+      options.push(opts);
+      let opts_count = [];
+      let opts_labels = [];
+      for (let opt in opts) {
+        opts_labels.push(opts[opt].option);
+        opts_count.push(
+          await ElectionAnswers.countOFOptions({
+            electionId: election.id,
+            chosenOption: opts[opt].id,
+            questionId: questions[question].id,
+          })
+        );
+      }
+      winners.push(Math.max.apply(Math, opts_count));
+      optionLabels.push(opts_labels);
+      optionsCount.push(opts_count);
+      console.log(winners);
+    }
+    const nVoted = await Voter.countOFVoted(election.id);
+    const nNotVoted = await Voter.countOFNotVoted(election.id);
+    const totalVoters = nVoted + nNotVoted;
+    return response.render("results", {
+      electionName: election.electionName,
+      answers,
+      questions,
+      options,
+      optionsCount,
+      optionLabels,
+      winners,
+      nVoted,
+      nNotVoted,
+      totalVoters,
+    });
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
 });
 //Sign out
 app.get("/signout", (request, response, next) => {

@@ -4,9 +4,26 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="<%= csrfToken %>" />
+    <meta name="csrf-token" content="<%=csrfToken%>" />
     <script src="https://cdn.tailwindcss.com"></script>
     <title> Election Page </title>
+    <script>
+      var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+      function stopElection() {
+          let electionId = <%=id%>;
+          fetch(`/elections/${electionId}/stop`, {
+              method: "put",
+              headers: {"Content-Type":"application/json"},
+              body: JSON.stringify({
+                  "_csrf":token,
+              })
+          }).then((res)=>{
+              if (res.ok) {
+                  window.location.replace(`/elections/${electionId}`);
+              }
+          }).catch((err)=> console.error(err))
+      }
+  </script>
 </head>
 <body>
   
@@ -48,7 +65,7 @@
 <% } %>
 <% if (isRunning==true) { %>
     
-    <a href="#" class="px-4 py-4 text-white wt-fit"> <button class="bg-green-600 hover:bg-green-800 rounded px-2 py-2"> End The Election</button></a>
+    <a class="px-4 py-4 text-white wt-fit"> <button class="bg-green-600 hover:bg-green-800 rounded px-2 py-2" onclick="stopElection()"> End The Election</button></a>
 <% } %>
   
 </body>

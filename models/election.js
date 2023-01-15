@@ -64,6 +64,20 @@ module.exports = (sequelize, DataTypes) => {
         }
       );
     }
+    static stopElection(id) {
+      return this.update(
+        {
+          isEnded: true,
+          isRunning: false,
+        },
+        {
+          returning: true,
+          where: {
+            id,
+          },
+        }
+      );
+    }
 
     static getElectionWithId(id) {
       return this.findOne({

@@ -23,6 +23,22 @@ module.exports = (sequelize, DataTypes) => {
         electionId,
       });
     }
+    static async countOFVoted(electionId) {
+      return await this.count({
+        where: {
+          electionId,
+          isVoted: true,
+        },
+      });
+    }
+    static async countOFNotVoted(electionId) {
+      return await this.count({
+        where: {
+          electionId,
+          isVoted: false,
+        },
+      });
+    }
     static async isVoted(id) {
       return await this.update(
         {
