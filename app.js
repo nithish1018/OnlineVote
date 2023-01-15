@@ -32,6 +32,7 @@ const flash = require("connect-flash");
 const questions = require("./models/questions");
 // eslint-disable-next-line no-unused-vars
 const voter = require("./models/voter");
+const { and } = require("sequelize");
 // eslint-disable-next-line no-undef
 app.set("views", path.join(__dirname, "views"));
 app.use(flash());
@@ -968,9 +969,9 @@ app.post("/e/:customURL", async (request, response) => {
         questionId: question.id,
         chosenOption: chosenOption,
       });
-      await Voter.isVoted(request.user.id);
-      return response.redirect(`/e/${request.params.customURL}/results`);
     }
+    await Voter.isVoted(request.user.id);
+    return response.redirect(`/e/${request.params.customURL}/results`);
   } catch (error) {
     console.log(error);
     return response.status(422).json(error);
@@ -1022,8 +1023,64 @@ app.get("/e/:customURL/results", async (request, response) => {
     if (!election.isRunning && !election.isEnded) {
       return response.status(404).render("error");
     }
-    if (!election.isEnded) {
+    if (!election.isEnded && request.user.isWho === "voter") {
       return response.render("afterVoting");
+    }
+    const questions = await Questions.getAllQuestions(election.id);
+    const answers = await ElectionAnswers.getElectionResults(election.id);
+    let options = [];
+    let optionLabels = [];
+    let optionsCount = [];
+    let winners = [];
+    for (let question in questions) {
+      let opts = await Option.getAllOptions(questions[question].id);
+      options.push(opts);
+      let opts_count = [];
+      let opts_labels = [];
+      for (let opt in opts) {
+        opts_labels.push(opts[opt].option);
+        opts_count.push(
+          await ElectionAnswers.countOFOptions({
+            electionId: election.id,
+            chosenOption: opts[opt].id,
+            questionId: questions[question].id,
+          })
+        );
+      }
+      winners.push(Math.max.apply(Math, opts_count));
+      optionLabels.push(opts_labels);
+      optionsCount.push(opts_count);
+      console.log(winners);
+    }
+    const nVoted = await Voter.countOFVoted(election.id);
+    const nNotVoted = await Voter.countOFNotVoted(election.id);
+    const totalVoters = nVoted + nNotVoted;
+    return response.render("results", {
+      electionName: election.electionName,
+      answers,
+      questions,
+      options,
+      optionsCount,
+      optionLabels,
+      winners,
+      nVoted,
+      nNotVoted,
+      totalVoters,
+    });
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+app.get("/elections/:id/preview_results", async (request, response) => {
+  try {
+    const thiselection = await Election.getElectionWithId(request.params);
+    const election = await Election.findElectionWithURL(thiselection.customURL);
+    if (!election.isRunning && !election.isEnded) {
+      return response.status(404).render("error");
+    }
+    if (!election.isEnded) {
+      return response.render("resultsPreview");
     }
     const questions = await Questions.getAllQuestions(election.id);
     const answers = await ElectionAnswers.getElectionResults(election.id);
@@ -1078,6 +1135,14 @@ app.get("/signout", (request, response, next) => {
       return next(err);
     }
     response.redirect("/");
+  });
+});
+app.get("/voter/:customURL/signout", (request, response, next) => {
+  request.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    response.redirect(`/e/${request.params.customURL}/voterlogin`);
   });
 });
 
