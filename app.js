@@ -729,6 +729,146 @@ app.get(
     });
   }
 );
+//Get Edit Voter Page
+app.get(
+  "/elections/:electionId/voter/:voterId/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.isWho === "admin") {
+      try {
+        const election = await Election.getElectionWithId(
+          request.params.electionId
+        );
+        const voter = await Voter.getOneVoter(request.params.voterId);
+
+        if (request.user.id !== election.adminId) {
+          request.flash("error", "Invalid election ID");
+          return response.redirect("/elections");
+        }
+        if (election.isEnded) {
+          request.flash("error", "Can't Edit As Election Has Already Ended");
+          return response.redirect(`/elections/${request.params.electionId}/`);
+        }
+        response.render("voterEdit", {
+          title: "Edit Voter",
+          electionId: request.params.electionId,
+          voterId: request.params.voterId,
+          csrfToken: request.csrfToken(),
+        });
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    } else if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
+  }
+);
+//Edit Voter
+app.post(
+  "/elections/:electionId/voter/:voterId/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.isWho === "admin") {
+      if (!request.body.voterUserId) {
+        request.flash("error", "Please Enter Voter ID");
+        return response.redirect(
+          `/elections/${request.params.electionId}/voter/${request.params.voterId}/edit`
+        );
+      }
+      if (!request.body.voterPassword) {
+        request.flash("error", "Please Enter Password");
+        return response.redirect(
+          `/elections/${request.params.electionId}/voter/${request.params.voterId}/edit`
+        );
+      }
+      if (request.body.voterPassword.length < 8) {
+        request.flash("error", "Password length should be atleast 8");
+        return response.redirect(
+          `/elections/${request.params.electionId}/voter/${request.params.voterId}/edit`
+        );
+      }
+
+      try {
+        const election = await Election.getElectionWithId(
+          request.params.electionId
+        );
+        if (request.user.id !== election.adminId) {
+          request.flash("error", "Invalid election ID");
+          return response.redirect("/elections");
+        }
+        if (election.isEnded) {
+          request.flash("error", "Can't Edit As Election Has Already Ended");
+          return response.redirect(`/elections/${request.params.electionId}/`);
+        }
+        const res = Voter.updateVoter({
+          id: request.params.voterId,
+          voterUserId: request.body.voterUserId,
+          voterPassword: request.body.voterPassword,
+        });
+        if (res) {
+          request.flash("success", "Voter Details Updated successfully");
+          return response.redirect(
+            `/elections/${request.params.electionId}/voters`
+          );
+        }
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    } else if (request.user.role === "voter") {
+      return response.redirect("/");
+    }
+  }
+);
+//Delete Voter
+app.delete(
+  "/elections/:electionId/voter/:voterId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.isWho === "admin") {
+      try {
+        const election = await Election.getElectionWithId(
+          request.params.electionId
+        );
+        if (request.user.id !== election.adminId) {
+          return response.json({
+            error: "Invalid Election ID",
+          });
+        }
+        if (election.isEnded) {
+          return response.json("Cannot delete when election has ended");
+        }
+        const votersCount = await Voter.countOFVoters(
+          request.params.electionId
+        );
+        if (votersCount > 1) {
+          const voter = await Voter.getOneVoter(request.params.voterId);
+          if (voter.isVoted) {
+            return response.json(
+              "Deletion is not allowed as this voter has already submitted their vote"
+            );
+          }
+          const res = await Voter.deleteVoter(request.params.voterId);
+          return response.json({ success: res === 1 });
+        }
+        if (votersCount === 1) {
+          request.flash(
+            "Atleast One Voter Should be available as the election is already begun"
+          );
+          return response.redirect(
+            `/elections/${request.params.electionId}/voters`
+          );
+        }
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    } else if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
+  }
+);
 //Election preview page
 app.get(
   "/elections/:id/election_preview",

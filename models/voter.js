@@ -51,10 +51,39 @@ module.exports = (sequelize, DataTypes) => {
         }
       );
     }
+    static async updateVoter({ id, voterUserId, voterPassword }) {
+      return await this.update(
+        {
+          voterUserId,
+          voterPassword,
+        },
+        {
+          returning: true,
+          where: {
+            id,
+          },
+        }
+      );
+    }
+    static deleteVoter(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
     static async getAllVoters(electionId) {
       return await this.findAll({
         where: {
           electionId,
+        },
+        order: [["id", "ASC"]],
+      });
+    }
+    static async getOneVoter(id) {
+      return await this.findOne({
+        where: {
+          id,
         },
         order: [["id", "ASC"]],
       });
