@@ -130,7 +130,7 @@ app.post("/admin", async (request, response) => {
     console.log(hashedPwd);
     if (request.body.password.length < 8) {
       request.flash("error", "Password should be atleast of length 8");
-      response.redirect("/signup");
+      return response.redirect("/signup");
     }
     const admin = await Admin.create({
       firstName: request.body.firstName,
