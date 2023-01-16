@@ -732,7 +732,7 @@ app.post(
 
     const questionId = request.params.questionId;
     return response.redirect(
-      `/elections/${request.params.id}/newquestion/create/${questionId}/`
+      `/elections/${request.params.id}/newquestion/create/${request.params.questionId}/showoptions/`
     );
   }
 );
