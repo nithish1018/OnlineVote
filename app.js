@@ -132,12 +132,14 @@ app.post("/admin", async (request, response) => {
       request.flash("error", "Password should be atleast of length 8");
       return response.redirect("/signup");
     }
+
     const admin = await Admin.create({
       firstName: request.body.firstName,
       lastName: request.body.lastName,
       email: request.body.email,
       password: hashedPwd,
     });
+
     request.login(admin, (err) => {
       if (err) {
         console.log(err);
@@ -185,7 +187,10 @@ app.post(
           thisElection,
         });
       } catch (error) {
-        request.flash("error", "Sorry this URL is already been use");
+        request.flash(
+          "error",
+          "Sorry Entered URL Or Election Name Is Already Been Use"
+        );
         return response.redirect("/elections");
       }
     } else if (request.user.isWho == "voter") {

@@ -114,6 +114,7 @@ module.exports = (sequelize, DataTypes) => {
       electionName: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
       },
       customURL: {
         type: DataTypes.STRING,

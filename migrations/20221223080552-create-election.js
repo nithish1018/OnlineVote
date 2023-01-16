@@ -11,6 +11,7 @@ module.exports = {
       },
       electionName: {
         type: Sequelize.STRING,
+        unique: true,
       },
       customURL: {
         type: Sequelize.STRING,
