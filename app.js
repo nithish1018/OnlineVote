@@ -1193,6 +1193,10 @@ app.post(
 );
 //Get voting page
 app.get("/e/:customURL", async (request, response) => {
+  const election = await Election.findElectionWithURL(request.params.customURL);
+  if (election.isEnded) {
+    return response.redirect(`/e/${request.params.customURL}/results`);
+  }
   if (!request.user) {
     request.flash("error", "Please login before trying to Vote");
     return response.redirect(`/e/${request.params.customURL}/voterlogin`);
