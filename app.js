@@ -334,10 +334,18 @@ app.delete(
       try {
         const election = await Election.getElectionWithId(request.params.id);
         if (election.isRunning) {
-          return response.json("Cannot Delete while election is running");
+          request.flash(
+            "error",
+            "Can't Delete As This Election Is Already Running"
+          );
+          return response.redirect("/elections");
         }
         if (election.isEnded) {
-          return response.json("Cannot Delete when election has ended");
+          request.flash(
+            "error",
+            "Can't Delete As This Election Has Been Succesfully Conducted"
+          );
+          return response.redirect("/elections");
         }
         if (request.user.id !== election.adminId) {
           request.flash("error", "Invalid election ID");

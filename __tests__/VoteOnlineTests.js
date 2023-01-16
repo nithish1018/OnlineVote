@@ -168,4 +168,147 @@ describe("Online voting application", function () {
       });
     expect(res.statusCode).toBe(302);
   });
+  // New Voter
+  test("Adding A New Voter", async () => {
+    const agent = request.agent(server);
+    await login(agent, "peter@gmail.com", "12345678");
+
+    //create new election
+    let res = await agent.get("/election/create");
+    let csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "2023 CBM Elections",
+      customURL: "cbm",
+      _csrf: csrfToken,
+    });
+    const groupedElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
+    const electionCount = parsedGroupedResponse.elections.length;
+    const latestElection = parsedGroupedResponse.elections[electionCount - 1];
+
+    //Adding Voter To This Election
+    res = await agent.get(`/elections/${latestElection.id}/voters/new`);
+    csrfToken = extractCsrfToken(res);
+    res = await agent.post(`/elections/${latestElection.id}/voters/new`).send({
+      voterUserId: "Voter1",
+      voterPassword: "87654321",
+      _csrf: csrfToken,
+    });
+    expect(res.statusCode).toBe(302);
+  });
+  // Test For Election Preview
+  test("Preview and Launch Election", async () => {
+    const agent = request.agent(server);
+    await login(agent, "peter@gmail.com", "12345678");
+
+    //create new election
+    let res = await agent.get("/election/create");
+    let csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "SpiderManQuest",
+      customURL: "webUp",
+      _csrf: csrfToken,
+    });
+    const groupedElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
+    const electionCount = parsedGroupedResponse.elections.length;
+    const latestElection = parsedGroupedResponse.elections[electionCount - 1];
+
+    res = await agent.get(`/elections/${latestElection.id}/election_preview`);
+    csrfToken = extractCsrfToken(res);
+    expect(res.statusCode).toBe(302);
+  });
+  // Test To Start Election
+  test("Start The Election", async () => {
+    const agent = request.agent(server);
+    await login(agent, "peter@gmail.com", "12345678");
+
+    //create new election
+    let res = await agent.get("/election/create");
+    let csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "BatmanQuest",
+      customURL: "batMobo",
+      _csrf: csrfToken,
+    });
+    const groupedElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
+    const electionCount = parsedGroupedResponse.elections.length;
+    const latestElection = parsedGroupedResponse.elections[electionCount - 1];
+
+    //Adding a Question
+    res = await agent.get(`/elections/${latestElection.id}/newquestion/create`);
+    csrfToken = extractCsrfToken(res);
+    await agent
+      .post(`/elections/${latestElection.id}/newquestion/create`)
+      .send({
+        question: "Is Peter Parker Spiderman?",
+        description: "Vote with caution",
+        _csrf: csrfToken,
+      });
+
+    const groupedQuestionsResponse = await agent
+      .get(`/elections/${latestElection.id}/newquestion`)
+      .set("Accept", "application/json");
+    const parsedQuestionsGroupedResponse = JSON.parse(
+      groupedQuestionsResponse.text
+    );
+    const questionCount = parsedQuestionsGroupedResponse.questions.length;
+    const latestQuestion =
+      parsedQuestionsGroupedResponse.questions[questionCount - 1];
+
+    res = await agent.get(
+      `/elections/${latestElection.id}/newquestion/create/${latestQuestion.id}`
+    );
+    csrfToken = extractCsrfToken(res);
+
+    res = await agent
+      .post(
+        `/elections/${latestElection.id}/newquestion/create/${latestQuestion.id}`
+      )
+      .send({
+        _csrf: csrfToken,
+        option: "Yes",
+      });
+
+    //adding another option
+    res = await agent.get(
+      `/elections/${latestElection.id}/newquestion/create/${latestQuestion.id}`
+    );
+    csrfToken = extractCsrfToken(res);
+
+    res = await agent
+      .post(
+        `/elections/${latestElection.id}/newquestion/create/${latestQuestion.id}`
+      )
+      .send({
+        _csrf: csrfToken,
+        option: "No",
+      });
+    //Adding Voter
+    res = await agent.get(`/elections/${latestElection.id}/voters/new`);
+    csrfToken = extractCsrfToken(res);
+    res = await agent.post(`/elections/${latestElection.id}/voters/new`).send({
+      voterUserId: "Voter2",
+      voterPassword: "87654321",
+      _csrf: csrfToken,
+    });
+
+    res = await agent.get(`/elections/${latestElection.id}/election_preview`);
+    csrfToken = extractCsrfToken(res);
+
+    // isRunning attribute of Election is false by default
+    expect(latestElection.isRunning).toBe(false);
+    res = await agent.put(`/elections/${latestElection.id}/start`).send({
+      _csrf: csrfToken,
+    });
+    const launchedElectionRes = JSON.parse(res.text);
+    expect(launchedElectionRes[1][0].isRunning).toBe(true);
+  });
 });
