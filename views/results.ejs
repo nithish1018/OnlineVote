@@ -39,8 +39,8 @@
             <span class="text-4xl font-semibold text-black-200">Voters Participation:</span>
             <div class="flex flex-col text-black-400">
               <span class="text-3xl ">Total voters: <%= totalVoters %></span>
-              <span class="text-3xl ">Voters completed: <%= nVoted %></span>
-              <span class="text-3xl ">Voters pending: <%= nNotVoted %></span>
+              <span class="text-3xl ">Count Of Voted Voters: <%= nVoted %></span>
+              <span class="text-3xl ">Count Of Pending Voters: <%= nNotVoted %></span>
             </div>
           </div>
           <div class="w-60">
@@ -64,13 +64,13 @@
                 }]
               },
               options: {
-                plugins: {  // 'legend' now within object 'plugins {}'
+                plugins: {  
                   legend: {
                     labels: {
-                      color: "black",  // not 'fontColor:' anymore
-                      // fontSize: 18  // not 'fontSize:' anymore
+                      color: "black",  
+                      
                       font: {
-                        size: 18 // 'size' now within object 'font {}'
+                        size: 18 
                       }
                     }
                   }
