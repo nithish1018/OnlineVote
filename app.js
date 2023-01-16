@@ -82,7 +82,7 @@ passport.use(
     }
   )
 );
-
+//Voter Validation
 passport.use(
   "voter",
   new LocalStrategy(
