@@ -128,6 +128,18 @@ app.post("/admin", async (request, response) => {
   try {
     const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
     console.log(hashedPwd);
+    if (!request.body.firstName) {
+      request.flash("error", "Please Enter First Name");
+      return response.redirect("/signup");
+    }
+    if (!request.body.email) {
+      request.flash("error", "Please Enter Email");
+      return response.redirect("/signup");
+    }
+    if (!request.body.password) {
+      request.flash("error", "Please Enter Your Password");
+      return response.redirect("/signup");
+    }
     if (request.body.password.length < 8) {
       request.flash("error", "Password should be atleast of length 8");
       return response.redirect("/signup");
@@ -215,6 +227,9 @@ app.get(
   "/elections",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
     let userName = request.user.firstName + " " + request.user.lastName;
     try {
       const elections = await Election.getAllElections(request.user.id);
@@ -386,6 +401,9 @@ app.get(
     "/elections/:id/newquestion",
     connectEnsureLogin.ensureLoggedIn(),
     async (request, response) => {
+      if (request.user.isWho === "voter") {
+        return response.redirect("/");
+      }
       const election = await Election.getElectionWithId(request.params.id);
       const questions = await Questions.getAllQuestions(request.params.id);
       const questionIds = [];
@@ -644,6 +662,9 @@ app.get(
   "/elections/:id/newquestion/create",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
     return response.render("create_question", {
       id: request.params.id,
       csrfToken: request.csrfToken(),
@@ -655,6 +676,9 @@ app.get(
   "/elections/:id/newquestion/create/:questionId/showoptions",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
     try {
       const question = await Questions.getQuestionWithId(
         request.params.questionId
@@ -678,6 +702,10 @@ app.get(
   "/election/create",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    if (request.user.isWho === "voter") {
+      request.flash("error", "Voter cannot access Admin's Pages");
+      return response.redirect("/");
+    }
     response.render("createElection", {
       title: "New Election",
       csrfToken: request.csrfToken(),
@@ -705,6 +733,10 @@ app.get(
   "/elections/:id/newquestion/create/:questionId",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    if (request.user.isWho === "voter") {
+      request.flash("error", "Voter cannot access Admin's Pages");
+      return response.redirect("/");
+    }
     response.render("optionsPage", {
       title: "Add Options",
       csrfToken: request.csrfToken(),
@@ -736,8 +768,6 @@ app.post(
         description,
         electionId,
       });
-
-      // const thisquestion=await Questions.getQuestionWithName(question,description)
 
       const questionId = thisquestion.id;
       return response.redirect(
@@ -830,6 +860,10 @@ app.get(
   "/elections/:id/voters",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    if (request.user.isWho === "voter") {
+      request.flash("error", "Voter cannot access Admin's Pages");
+      return response.redirect("/");
+    }
     const votersCount = await Voter.countOFVoters(request.params.id);
     const allVoters = await Voter.getAllVoters(request.params.id);
     const thisElection = await Election.getElectionWithId(request.params.id);
@@ -1112,6 +1146,10 @@ app.get(
   "/elections/:id/voters/new",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    if (request.user.isWho === "voter") {
+      request.flash("error", "Voter cannot access Admin's Pages");
+      return response.redirect("/");
+    }
     response.render("newVoter", {
       csrfToken: request.csrfToken(),
       id: request.params.id,
