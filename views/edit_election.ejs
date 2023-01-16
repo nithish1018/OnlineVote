@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Edit Election </title>
+    <style>
+        input#name:invalid:focus{
+            border:1px solid red;
+        }
+    </style>
+     <script>
+        var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        function editElection() {
+            let electionId = <%= electionId %>;
+            let electionName = document.getElementById("electionName").value;
+            let customURL = document.getElementById("customURL").value;
+            let flag = (electionName.length < 5 || customURL.length<3);
+            fetch(`/elections/${electionId}/edit`, {
+                method: "put",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({
+                    "_csrf":token,
+                    "electionName":electionName,
+                    "customURL":customURL
+                })
+            }).then((res)=>{
+                if (flag) {
+                    window.location.reload();
+                }
+                if (res.ok) {
+                    window.location.replace(`/elections/`);
+                }
+            }).catch((err)=> console.error(err))
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+    <div><%- include('header.ejs') %></div>
+    
+      <br>  <div class="relative mx-auto mb-8 w-fit">
+            <% if(messages && messages.error && messages.error.length > 0)  { %>
+               <% for(var i=0; i<messages.error.length; i++) { %>
+                    <br>   <li class="text-white rounded px-40 py-4 bg-red-500"> <%= messages.error[i] %></li>
+               <% } %>
+             <% } %>
+          </div>
+
+    <div class="relative flex min-h-screen flex-col justify-center overflow-hidden py-6 ">
+        <div class="relative bg-gray-200 px-6 pb-5 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-lg sm:rounded-lg sm:px-10">
+            <div class="mx-auto max-w-md">
+                <h2 class="text-2xl  text-center font-bold my-5"> Edit Election Details From Here
+                    
+                </h2>
+             
+                <div class="divide-y  divide-gray-300/50">
+                    <div class="space-y-6 text-base leading-7 text-ray-600">
+                  
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <label for="electionName" class="text-md w-40 inline-block font-medium leading-5 text-gray-700">
+                               Enter Election Name
+                            </label>
+                            <input required type="text" id="electionName" name="electionName" class="bg-gray-100 inline-block rounded-lg shadow-md py-3 px-4 mb-5 text-base leading-6 placeolder-gray-500" placeholder="Enter Election Name " required><br/>
+                            <label for="customURL" class="text-md w-40 inline-block font-medium leading-3 text-gray-700">Enter any string</label>
+                            <input required type="text" id="customURL" name="customURL" class="bg-gray-100 inline-block rounded-lg shadow-md py-3 px-4 mb-5 text-base leading-6 placeolder-gray-500" placeholder="Any string,but no spaces"><br/>
+                            <button  onclick="editElection()" class="w-fit rounded-lg shadow-lg px-5 py-3 bg-green-500 text-white hover:bg-green-400 focus:outline-none focus block">Edit Election</button>
+                            
+                       
+
+                    </div>
+                    
+                </div>
+                
+            </div>
+    
+        </div>

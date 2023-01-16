@@ -228,45 +228,153 @@ app.get(
     }
   }
 ),
-  //Election management Page
+  //Get election edit page
   app.get(
-    "/elections/:id",
+    "/elections/:electionId/edit",
     connectEnsureLogin.ensureLoggedIn(),
     async (request, response) => {
       if (request.user.isWho === "admin") {
         try {
-          const election = await Election.getElectionWithId(request.params.id);
-          const customURL = election.customURL;
+          const election = await Election.getElectionWithId(
+            request.params.electionId
+          );
           if (request.user.id !== election.adminId) {
             request.flash("error", "Invalid election ID");
             return response.redirect("/elections");
           }
-          if (election.isEnded) {
-            return response.redirect(`/e/${customURL}/results`);
+          if (election.isRunning === true) {
+            request.flash("error", "Cannot edit while election is running");
+            return response.redirect(
+              `/elections/${request.params.electionId}/`
+            );
           }
-          const questionsCount = await Questions.countOFQuestions(
-            request.params.id
-          );
+          if (election.isEnded == true) {
+            request.flash("error", "Cannot edit when election has ended");
+            return response.redirect(
+              `/elections/${request.params.electionId}/`
+            );
+          }
 
-          const votersCount = await Voter.countOFVoters(request.params.id);
-          console.log(questionsCount);
-          return response.render("questions", {
-            id: request.params.id,
-            title: election.electionName,
+          return response.render("edit_election", {
+            electionId: request.params.electionId,
             csrfToken: request.csrfToken(),
-            questionsC: questionsCount,
-            votersC: votersCount,
-            customURL: election.customURL,
-            isRunning: election.isRunning,
           });
         } catch (error) {
           console.log(error);
+          return response.status(422).json(error);
         }
-      } else if (request.user.isWho == "voter") {
+      } else if (request.user.isWho === "voter") {
         return response.redirect("/");
       }
     }
-  ),
+  );
+//Edit Election
+app.put(
+  "/elections/:electionId/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.isWho === "admin") {
+      try {
+        const election = await Election.getElectionWithId(
+          request.params.electionId
+        );
+        if (election.isRunning === true) {
+          return response.json("Cannot edit while election is running");
+        }
+        if (election.isEnded === true) {
+          return response.json("Cannot edit when election has ended");
+        }
+        if (request.user.id !== election.adminId) {
+          return response.json({
+            error: "Invalid Election ID",
+          });
+        }
+        const updatedElection = await Election.updateElection({
+          electionName: request.body.electionName,
+          customURL: request.body.customURL,
+          id: request.params.electionId,
+        });
+        return response.json(updatedElection);
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    } else if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
+  }
+);
+// Delete Election
+app.delete(
+  "/elections/:id/delete",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.isWho === "admin") {
+      try {
+        const election = await Election.getElectionWithId(request.params.id);
+        if (election.isRunning) {
+          return response.json("Cannot Delete while election is running");
+        }
+        if (election.isEnded) {
+          return response.json("Cannot Delete when election has ended");
+        }
+        if (request.user.id !== election.adminId) {
+          request.flash("error", "Invalid election ID");
+          return response.redirect("/elections");
+        }
+
+        const deletedElection = await Election.deleteElection(
+          request.params.id
+        );
+        return response.json({ success: deletedElection === 1 });
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    } else if (request.user.isWho === "voter") {
+      return response.redirect("/");
+    }
+  }
+);
+//Election management Page
+app.get(
+  "/elections/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.isWho === "admin") {
+      try {
+        const election = await Election.getElectionWithId(request.params.id);
+        const customURL = election.customURL;
+        if (request.user.id !== election.adminId) {
+          request.flash("error", "Invalid election ID");
+          return response.redirect("/elections");
+        }
+        if (election.isEnded) {
+          return response.redirect(`/e/${customURL}/results`);
+        }
+        const questionsCount = await Questions.countOFQuestions(
+          request.params.id
+        );
+
+        const votersCount = await Voter.countOFVoters(request.params.id);
+        console.log(questionsCount);
+        return response.render("questions", {
+          id: request.params.id,
+          title: election.electionName,
+          csrfToken: request.csrfToken(),
+          questionsC: questionsCount,
+          votersC: votersCount,
+          customURL: election.customURL,
+          isRunning: election.isRunning,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (request.user.isWho == "voter") {
+      return response.redirect("/");
+    }
+  }
+),
   //Add question
   app.get(
     "/elections/:id/newquestion",

@@ -29,6 +29,27 @@ module.exports = (sequelize, DataTypes) => {
         adminId,
       });
     }
+    static async updateElection({ electionName, customURL, id }) {
+      return await this.update(
+        {
+          electionName,
+          customURL,
+        },
+        {
+          returning: true,
+          where: {
+            id,
+          },
+        }
+      );
+    }
+    static deleteElection(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
     static getAllURL(adminId) {
       return this.findAll({
         where: adminId,
