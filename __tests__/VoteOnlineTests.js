@@ -20,6 +20,15 @@ const login = async (agent, username, password) => {
     _csrf: csrfToken,
   });
 };
+const voterLogin = async (agent, customURL, username, password) => {
+  let res = await agent.get(`/e/${customURL}/voterlogin`);
+  let csrfToken = extractCsrfToken(res);
+  res = await agent.post(`/e/${customURL}/voterlogin`).send({
+    voterUserId: username,
+    voterPassword: password,
+    _csrf: csrfToken,
+  });
+};
 
 describe("Online voting application", function () {
   beforeAll(async () => {
@@ -310,5 +319,37 @@ describe("Online voting application", function () {
     });
     const launchedElectionRes = JSON.parse(res.text);
     expect(launchedElectionRes[1][0].isRunning).toBe(true);
+  });
+  // Test for Voter Login
+  test("Voter Login", async () => {
+    const agent = request.agent(server);
+    await login(agent, "peter@gmail.com", "12345678");
+    const groupedElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
+    const electionCount = parsedGroupedResponse.elections.length;
+    const latestElection = parsedGroupedResponse.elections[electionCount - 1];
+
+    //add a voter
+    let res = await agent.get(`/elections/${latestElection.id}/voters/new`);
+    let csrfToken = extractCsrfToken(res);
+    res = await agent.post(`/elections/${latestElection.id}/voters/new`).send({
+      voterUserId: "Voter10",
+      voterPassword: "101812345678",
+      _csrf: csrfToken,
+    });
+    await agent.get("/signout");
+
+    res = await agent.get(`/e/${latestElection.customURL}`);
+    expect(res.statusCode).toBe(302);
+    await voterLogin(
+      agent,
+      latestElection.customURL,
+      "Voter10",
+      "101812345678"
+    );
+    res = await agent.get(`/e/${latestElection.customURL}`);
+    expect(res.statusCode).toBe(200);
   });
 });
