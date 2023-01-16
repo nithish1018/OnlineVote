@@ -1386,6 +1386,7 @@ app.get("/signout", (request, response, next) => {
     response.redirect("/");
   });
 });
+// Voter Sign Out
 app.get("/voter/:customURL/signout", (request, response, next) => {
   request.logout((err) => {
     if (err) {
@@ -1394,6 +1395,7 @@ app.get("/voter/:customURL/signout", (request, response, next) => {
     response.redirect(`/e/${request.params.customURL}/voterlogin`);
   });
 });
+// To get error page
 app.use(function (request, response) {
   response.status(404).render("error");
 });
