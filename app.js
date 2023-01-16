@@ -56,6 +56,7 @@ app.use(function (request, response, next) {
   response.locals.messages = request.flash();
   next();
 });
+
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(
@@ -1392,6 +1393,9 @@ app.get("/voter/:customURL/signout", (request, response, next) => {
     }
     response.redirect(`/e/${request.params.customURL}/voterlogin`);
   });
+});
+app.use(function (request, response) {
+  response.status(404).render("error");
 });
 
 module.exports = app;
