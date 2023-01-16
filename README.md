@@ -21,6 +21,6 @@ An Online Voting Platform To Conduct Authentic, Secure Elections For Any Organiz
 8. Stop The Election By Selecting `End The Election`
 9. Results Will Be Displayed
 #### Application Screenshots
-![alt text](https://github.com/nithish1018/OnlineVote/blob/main/App_Images/Image1.jpg)
-<img src="https://github.com/nithish1018/OnlineVote/blob/main/App_Images/Image1.jpg">
+![alt text](App_Images/Image1.jpg)
+
 
