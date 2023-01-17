@@ -1005,16 +1005,14 @@ app.delete(
               "Deletion is not allowed as this voter has already submitted their vote"
             );
           }
+          if (votersCount === 1) {
+            request.flash("Atleast One Voter Should be available");
+            return response.redirect(
+              `/elections/${request.params.electionId}/voters`
+            );
+          }
           const res = await Voter.deleteVoter(request.params.voterId);
           return response.json({ success: res === 1 });
-        }
-        if (votersCount === 1) {
-          request.flash(
-            "Atleast One Voter Should be available as the election has already begun"
-          );
-          return response.redirect(
-            `/elections/${request.params.electionId}/voters`
-          );
         }
       } catch (error) {
         console.log(error);
