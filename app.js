@@ -1010,7 +1010,7 @@ app.delete(
         }
         if (votersCount === 1) {
           request.flash(
-            "Atleast One Voter Should be available as the election is already begun"
+            "Atleast One Voter Should be available as the election has already begun"
           );
           return response.redirect(
             `/elections/${request.params.electionId}/voters`

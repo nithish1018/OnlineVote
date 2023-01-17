@@ -7,6 +7,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.addColumn("Questions", "electionId", {
       type: Sequelize.DataTypes.INTEGER,
+      onDelete: "CASCADE",
     });
     /**
      * Add altering commands here.
@@ -17,6 +18,7 @@ module.exports = {
     await queryInterface.addConstraint("Questions", {
       fields: ["electionId"],
       type: "foreign key",
+      onDelete: "CASCADE",
       references: {
         table: "Elections",
         field: "id",

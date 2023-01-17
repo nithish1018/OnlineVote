@@ -5,10 +5,12 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.addColumn("Voters", "electionId", {
       type: Sequelize.DataTypes.INTEGER,
+      onDelete: "CASCADE",
     });
     await queryInterface.addConstraint("Voters", {
       fields: ["electionId"],
       type: "foreign key",
+      onDelete: "CASCADE",
       references: {
         table: "Elections",
         field: "id",
