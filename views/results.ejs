@@ -13,7 +13,7 @@
     let optionsCount = null;
   </script>
   <title>
-    <%= electionName %> - Results
+  Results Of Election:<%= electionName %>
   </title>
 </head>
 
@@ -32,20 +32,29 @@
       </div>
       <div class="flex flex-col gap-6 divide-y-2 divide-black">
         <span class="text-5xl font-light mb-8">
-          <%= electionName %> - Results
+          Results Of Election: " <%= electionName %> "
+
         </span>
-        <div class="flex py-3 justify-between">
+        <div class="py-3 justify-between">
           <div class="flex flex-col justify-evenly">
-            <span class="text-4xl font-semibold text-black-200">Voters Participation:</span>
+            <span class="text-4xl font-bold text-black-200">Voters Participation:</span>
             <div class="flex flex-col text-black-400">
               <span class="text-3xl ">Total voters: <%= totalVoters %></span>
               <span class="text-3xl ">Count Of Voted Voters: <%= nVoted %></span>
               <span class="text-3xl ">Count Of Pending Voters: <%= nNotVoted %></span>
+              
+             
+
             </div>
           </div>
-          <div class="w-60">
-            <canvas class="object-contain" id="votes"></canvas>
+          <div class="w-full flex mt-6">
+            <span class="text-3xl ">Pie Chart:</span>
+            <div class="w-60">
+              <canvas class="object-contain" id="votes"></canvas>
+            </div>
           </div>
+       
+       
           <script>
             ctx = document.getElementById('votes');
             completed = "<%= nVoted %>";
@@ -53,7 +62,7 @@
             new Chart(ctx, {
               type: 'pie',
               data: {
-                labels: ["Completed voters", "Pending voters"],
+                labels: ["Completed ", "Pending "],
                 datasets: [{
                   data: [completed, pending],
                   borderColor: "#000000",
