@@ -42,7 +42,10 @@
               <span class="text-3xl ">Total voters: <%= totalVoters %></span>
               <span class="text-3xl ">Count Of Voted Voters: <%= nVoted %></span>
               <span class="text-3xl ">Count Of Pending Voters: <%= nNotVoted %></span>
-              
+              <% if (nVoted==0) { %>
+                <span class="text-3xl font-bold text-red-500 ">No one has voted yet!!</span>
+                 
+                <% } %>
              
 
             </div>

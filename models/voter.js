@@ -54,8 +54,8 @@ module.exports = (sequelize, DataTypes) => {
     static async updateVoter({ id, voterUserId, voterPassword }) {
       return await this.update(
         {
-          voterUserId,
-          voterPassword,
+          voterUserId: voterUserId,
+          voterPassword: voterPassword,
         },
         {
           returning: true,

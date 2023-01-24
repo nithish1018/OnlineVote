@@ -1298,7 +1298,7 @@ app.get("/e/:customURL/voterlogin", async (request, response) => {
       });
     } else {
       request.flash("Election has ended");
-      return response.render("result");
+      return response.redirect(`/e/${request.params.customURL}/results`);
     }
   } catch (error) {
     console.log(error);
@@ -1322,12 +1322,24 @@ app.get("/e/:customURL/results", async (request, response) => {
     const election = await Election.findElectionWithURL(
       request.params.customURL
     );
+    if (!request.user && !election.isEnded) {
+      request.flash(
+        "error",
+        "Please login as voter as Election has not ended yet"
+      );
+      return response.redirect(`/e/${request.params.customURL}/voterlogin`);
+    }
+    if (!request.user && election.isEnded) {
+      return response.redirect(`/e/${request.params.customURL}/results/public`);
+    }
     if (!election.isRunning && !election.isEnded) {
       return response.status(404).render("error");
     }
     if (!election.isEnded && request.user.isWho === "voter") {
       return response.render("afterVoting");
     }
+    let userWho = request.user.isWho;
+
     const questions = await Questions.getAllQuestions(election.id);
     const answers = await ElectionAnswers.getElectionResults(election.id);
     let options = [];
@@ -1368,6 +1380,61 @@ app.get("/e/:customURL/results", async (request, response) => {
       nVoted,
       nNotVoted,
       totalVoters,
+      userWho,
+    });
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+//results for public users
+app.get("/e/:customURL/results/public", async (request, response) => {
+  try {
+    const election = await Election.findElectionWithURL(
+      request.params.customURL
+    );
+
+    const questions = await Questions.getAllQuestions(election.id);
+    const answers = await ElectionAnswers.getElectionResults(election.id);
+    let options = [];
+    let optionLabels = [];
+    let optionsCount = [];
+    let winners = [];
+    for (let question in questions) {
+      let opts = await Option.getAllOptions(questions[question].id);
+      options.push(opts);
+      let opts_count = [];
+      let opts_labels = [];
+      for (let opt in opts) {
+        opts_labels.push(opts[opt].option);
+        opts_count.push(
+          await ElectionAnswers.countOFOptions({
+            electionId: election.id,
+            chosenOption: opts[opt].id,
+            questionId: questions[question].id,
+          })
+        );
+      }
+      winners.push(Math.max.apply(Math, opts_count));
+      optionLabels.push(opts_labels);
+      optionsCount.push(opts_count);
+      console.log(winners);
+    }
+    const nVoted = await Voter.countOFVoted(election.id);
+    const nNotVoted = await Voter.countOFNotVoted(election.id);
+    const totalVoters = nVoted + nNotVoted;
+    return response.render("resultsPublic", {
+      electionName: election.electionName,
+      answers,
+      questions,
+      options,
+      optionsCount,
+      optionLabels,
+      winners,
+      nVoted,
+      nNotVoted,
+      totalVoters,
+      userWho: "public",
     });
   } catch (error) {
     console.log(error);
@@ -1376,55 +1443,54 @@ app.get("/e/:customURL/results", async (request, response) => {
 });
 app.get("/elections/:id/preview_results", async (request, response) => {
   try {
-    const thiselection = await Election.getElectionWithId(request.params);
+    const thiselection = await Election.getElectionWithId(request.params.id);
     const election = await Election.findElectionWithURL(thiselection.customURL);
     if (!election.isRunning && !election.isEnded) {
       return response.status(404).render("error");
     }
     if (!election.isEnded) {
-      return response.render("resultsPreview");
-    }
-    const questions = await Questions.getAllQuestions(election.id);
-    const answers = await ElectionAnswers.getElectionResults(election.id);
-    let options = [];
-    let optionLabels = [];
-    let optionsCount = [];
-    let winners = [];
-    for (let question in questions) {
-      let opts = await Option.getAllOptions(questions[question].id);
-      options.push(opts);
-      let opts_count = [];
-      let opts_labels = [];
-      for (let opt in opts) {
-        opts_labels.push(opts[opt].option);
-        opts_count.push(
-          await ElectionAnswers.countOFOptions({
-            electionId: election.id,
-            chosenOption: opts[opt].id,
-            questionId: questions[question].id,
-          })
-        );
+      const questions = await Questions.getAllQuestions(election.id);
+      const answers = await ElectionAnswers.getElectionResults(election.id);
+      let options = [];
+      let optionLabels = [];
+      let optionsCount = [];
+      let winners = [];
+      for (let question in questions) {
+        let opts = await Option.getAllOptions(questions[question].id);
+        options.push(opts);
+        let opts_count = [];
+        let opts_labels = [];
+        for (let opt in opts) {
+          opts_labels.push(opts[opt].option);
+          opts_count.push(
+            await ElectionAnswers.countOFOptions({
+              electionId: election.id,
+              chosenOption: opts[opt].id,
+              questionId: questions[question].id,
+            })
+          );
+        }
+        winners.push(Math.max.apply(Math, opts_count));
+        optionLabels.push(opts_labels);
+        optionsCount.push(opts_count);
+        console.log(winners);
       }
-      winners.push(Math.max.apply(Math, opts_count));
-      optionLabels.push(opts_labels);
-      optionsCount.push(opts_count);
-      console.log(winners);
+      const nVoted = await Voter.countOFVoted(election.id);
+      const nNotVoted = await Voter.countOFNotVoted(election.id);
+      const totalVoters = nVoted + nNotVoted;
+      return response.render("resultsPreview", {
+        electionName: election.electionName,
+        answers,
+        questions,
+        options,
+        optionsCount,
+        optionLabels,
+        winners,
+        nVoted,
+        nNotVoted,
+        totalVoters,
+      });
     }
-    const nVoted = await Voter.countOFVoted(election.id);
-    const nNotVoted = await Voter.countOFNotVoted(election.id);
-    const totalVoters = nVoted + nNotVoted;
-    return response.render("results", {
-      electionName: election.electionName,
-      answers,
-      questions,
-      options,
-      optionsCount,
-      optionLabels,
-      winners,
-      nVoted,
-      nNotVoted,
-      totalVoters,
-    });
   } catch (error) {
     console.log(error);
     return response.status(422).json(error);
