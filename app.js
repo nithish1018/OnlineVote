@@ -3,7 +3,9 @@
 const express = require("express");
 var csrf = require("tiny-csrf");
 var cookieParser = require("cookie-parser");
+var validator = require("validator");
 const app = express();
+var validate = require("deep-email-validator");
 // eslint-disable-next-line no-unused-vars
 const {
   Admin,
@@ -144,6 +146,14 @@ app.post("/admin", async (request, response) => {
       request.flash("error", "Password should be atleast of length 8");
       return response.redirect("/signup");
     }
+    if (!validator.isEmail(request.body.email)) {
+      request.flash("error", "Please Enter Valid Email Id");
+      return response.redirect("/signup");
+    }
+    // if(!validate(request.body.email)){
+    //   request.flash("error","Please Enter Valid Email Id")
+    //   return response.redirect("/signup");
+    // }
 
     const admin = await Admin.create({
       firstName: request.body.firstName,

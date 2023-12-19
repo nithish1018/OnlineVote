@@ -9,12 +9,6 @@ module.exports = {
       type: Sequelize.DataTypes.INTEGER,
       onDelete: "CASCADE",
     });
-    /**
-     * Add altering commands here.
-     *
-     * Example:
-     * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
-     */
     await queryInterface.addConstraint("Questions", {
       fields: ["electionId"],
       type: "foreign key",
